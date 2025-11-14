@@ -1,0 +1,63 @@
+*{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+:root{--bg:#0f1724;--card:#0b1220;--accent:#ff7a59;--muted:#9aa4b2}
+html,body,#root{height:100%;scroll-behavior:auto}
+body{min-height:100vh;background:linear-gradient(180deg,#071133 0%,#081426 60%);color:#e6eef8;display:flex;align-items:center;justify-content:center;padding:32px;overflow:hidden}
+.container{width:980px;max-width:95%;text-align:center;}
+h1{text-align:center;margin-bottom:18px}
+
+/* Árbol de Navidad */
+.tree-container{margin:1rem auto 1.5rem;display:flex;justify-content:center}
+.tree{position:relative;display:flex;flex-direction:column;align-items:center}
+.tree-top{position:relative;width:0;height:0;z-index:10}
+.star{font-size:2rem;animation:starTwinkle 1.2s ease-in-out infinite;display:block;position:absolute;top:-2rem;left:50%;transform:translateX(-50%);transform-origin:center}
+@keyframes starTwinkle{0%,100%{transform:translateX(-50%) scale(1);filter:brightness(1)}50%{transform:translateX(-50%) scale(1.25);filter:brightness(1.6)}}
+.tree-section{position:relative;width:0;height:0;border-left:25px solid transparent;border-right:25px solid transparent;border-bottom:40px solid #2d5016;margin-top:-5px}
+.tree-section-2{border-left-width:35px;border-right-width:35px;border-bottom-width:50px}
+.tree-section-3{border-left-width:45px;border-right-width:45px;border-bottom-width:60px}
+.tree-trunk{width:20px;height:25px;background:#5d4037;margin-top:-3px;border-radius:0 0 3px 3px}
+.light{position:absolute;width:8px;height:8px;border-radius:50%;background:#ffeb3b;box-shadow:0 0 10px currentColor;animation:blink 1.5s infinite}
+.tree-section-1 .light:nth-child(1){left:-15px;top:10px;animation-delay:0s}
+.tree-section-1 .light:nth-child(2){left:5px;top:15px;animation-delay:0.3s}
+.tree-section-1 .light:nth-child(3){left:15px;top:8px;animation-delay:0.6s}
+.tree-section-2 .light:nth-child(1){left:-25px;top:15px;animation-delay:0.2s}
+.tree-section-2 .light:nth-child(2){left:-8px;top:20px;animation-delay:0.5s}
+.tree-section-2 .light:nth-child(3){left:10px;top:18px;animation-delay:0.8s}
+.tree-section-2 .light:nth-child(4){left:25px;top:12px;animation-delay:0.1s}
+.tree-section-3 .light:nth-child(1){left:-35px;top:20px;animation-delay:0.4s}
+.tree-section-3 .light:nth-child(2){left:-18px;top:28px;animation-delay:0.7s}
+.tree-section-3 .light:nth-child(3){left:0px;top:30px;animation-delay:0.9s}
+.tree-section-3 .light:nth-child(4){left:18px;top:25px;animation-delay:0.15s}
+.tree-section-3 .light:nth-child(5){left:35px;top:18px;animation-delay:0.45s}
+@keyframes blink{0%,100%{opacity:0.3;background:#ffeb3b;box-shadow:0 0 5px #ffeb3b}50%{opacity:1;background:#fff;box-shadow:0 0 15px #ffeb3b,0 0 25px rgba(255,235,59,0.5)}}
+.tree-section-1 .light:nth-child(2),.tree-section-2 .light:nth-child(3),.tree-section-3 .light:nth-child(1),.tree-section-3 .light:nth-child(4){animation-name:blinkRed}
+.tree-section-1 .light:nth-child(3),.tree-section-2 .light:nth-child(1),.tree-section-3 .light:nth-child(2){animation-name:blinkBlue}
+.tree-section-2 .light:nth-child(4),.tree-section-3 .light:nth-child(5){animation-name:blinkGreen}
+@keyframes blinkRed{0%,100%{opacity:0.3;background:#f44336;box-shadow:0 0 5px #f44336}50%{opacity:1;background:#ff8a80;box-shadow:0 0 15px #f44336,0 0 25px rgba(244,67,54,0.5)}}
+@keyframes blinkBlue{0%,100%{opacity:0.3;background:#2196f3;box-shadow:0 0 5px #2196f3}50%{opacity:1;background:#82b1ff;box-shadow:0 0 15px #2196f3,0 0 25px rgba(33,150,243,0.5)}}
+@keyframes blinkGreen{0%,100%{opacity:0.3;background:#4caf50;box-shadow:0 0 5px #4caf50}50%{opacity:1;background:#b9f6ca;box-shadow:0 0 15px #4caf50,0 0 25px rgba(76,175,80,0.5)}}
+
+.controls{display:flex;gap:12px;align-items:center;justify-content:center;margin-bottom:18px}
+.controls input{padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:inherit}
+.controls button{padding:10px 14px;border-radius:10px;border:none;background:var(--accent);color:#081022;font-weight:600;cursor:pointer}
+.controls button:disabled{opacity:.5;cursor:not-allowed}
+.slot-machine{display:flex;gap:10px;justify-content:center;margin:20px 0;position:relative}
+.reel{width:420px;height:120px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#0b1530,#081027);border:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;position:relative}
+.reel .strip{position:absolute;top:0;left:0;right:0}
+.reel .item{height:120px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700}
+.reel-overlay{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:12px;z-index:1}
+.result{position:fixed;top:68%;left:50%;transform:translate(-50%,-50%);z-index:100;display:flex;align-items:center;justify-content:center;margin:0;pointer-events:none}
+.result.hidden{display:none}
+.result-card{background:linear-gradient(180deg,#081226,#06101b);padding:32px 40px;border-radius:16px;border:2px solid var(--accent);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);pointer-events:auto}
+.result .name{font-size:36px;color:var(--accent);font-weight:800;margin:12px 0}
+.result button{margin-top:16px}
+#confettiCanvas{position:fixed;left:0;top:0;pointer-events:none;z-index:99}
+.note{text-align:center;margin-top:12px;color:var(--muted);font-size:13px}
+
+/* Countdown overlay */
+.countdown-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:200;display:flex;align-items:center;justify-content:center;transition:opacity 0.3s ease}
+.countdown-card{text-align:center;padding:40px 50px;background:linear-gradient(180deg,#081226,#06101b);border-radius:20px;border:2px solid var(--accent);box-shadow:0 20px 60px rgba(0,0,0,0.7)}
+.countdown-warning{font-size:22px;margin:0 0 10px;color:#fff;font-weight:600}
+.countdown-secret{font-size:16px;margin:0 0 30px;color:var(--accent);text-transform:uppercase;letter-spacing:2px;font-weight:700}
+.countdown-number{font-size:80px;font-weight:900;color:var(--accent);margin:0;line-height:1;animation:countPulse 0.8s ease-out}
+.countdown-sound{font-size:20px;margin:20px 0 0;color:#fff;opacity:0.8}
+@keyframes countPulse{0%{transform:scale(0.5);opacity:0}50%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
