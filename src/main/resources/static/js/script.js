@@ -1,17 +1,8 @@
-// script.js — single reel, auto-load mock or use token
+// script.js — single reel, auto-load from server data
 (() => {
   const namesPool = [];
   let loaded = false;
-  le  function playMusic() {
-    try {
-      audio = new Audio('/audio/santa-claus.mp3');
-      audio.currentTime = 6; // Empezar desde el segundo 6
-      audio.volume = 0.4; // Volumen al 40%
-      audio.play().catch(e => console.log('Error al reproducir audio:', e));
-    } catch (e) {
-      console.log('Audio no disponible:', e);
-    }
-  }FromServer = null;
+  let assignedFromServer = null;
   const itemsPerReel = 60;
 
   const spinBtn = document.getElementById('spinBtn');
@@ -107,7 +98,7 @@
 
   function playMusic() {
     try {
-      audio = new Audio('/audio/Michael Bublé - Santa Claus Is Coming To Town.mp3');
+      audio = new Audio('/audio/bg_song.m4a');
       audio.currentTime = 6; // Empezar desde el segundo 6
       audio.volume = 0.4; // Volumen al 40%
       audio.play().catch(e => console.log('Error al reproducir audio:', e));
