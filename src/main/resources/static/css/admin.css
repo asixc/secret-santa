@@ -242,10 +242,16 @@ body {
 .sorteo-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 20px;
   padding-bottom: 15px;
   border-bottom: 2px solid #f0f0f0;
+}
+
+.sorteo-header > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .sorteo-header h3 {
@@ -256,6 +262,25 @@ body {
 .sorteo-date {
   color: #999;
   font-size: 0.9rem;
+}
+
+.btn-delete-sorteo {
+  padding: 8px 16px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.btn-delete-sorteo:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
 }
 
 .participants-list h4 {

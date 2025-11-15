@@ -14,8 +14,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -26,6 +30,7 @@ public class CreateController {
 
     private final SorteoRepository sorteoRepository;
     private final ParticipanteRepository participanteRepository;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     @GetMapping("/create")
     public String showCreatePage(Model model) {
@@ -146,7 +151,8 @@ public class CreateController {
         final int MAX_INTENTOS = 100;
 
         while (!valid && intentos < MAX_INTENTOS) {
-            Collections.shuffle(indices);
+            // Usar SecureRandom para shuffle verdaderamente aleatorio
+            Collections.shuffle(indices, secureRandom);
             valid = true;
 
             // Verificar que nadie se tiene a sí mismo
@@ -172,5 +178,39 @@ public class CreateController {
                 participantes.get(i).getNombre(), 
                 participantes.get(asignadoIndex).getNombre());
         }
+    }
+
+    /**
+     * Elimina un sorteo y todos sus participantes
+     */
+    @DeleteMapping("/sorteo/{id}")
+    public String deleteSorteo(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Optional<Sorteo> sorteoOpt = sorteoRepository.findById(id);
+            
+            if (sorteoOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "No se encontró el sorteo a eliminar");
+                return "redirect:/create";
+            }
+            
+            Sorteo sorteo = sorteoOpt.get();
+            String nombreSorteo = sorteo.getNombre();
+            
+            // El cascade=ALL y orphanRemoval=true se encargan de eliminar participantes
+            sorteoRepository.delete(sorteo);
+            
+            log.info("Sorteo eliminado: {} (ID: {})", nombreSorteo, id);
+            
+            redirectAttributes.addFlashAttribute("success", 
+                "Sorteo \"" + nombreSorteo + "\" eliminado correctamente");
+            
+        } catch (Exception e) {
+            log.error("Error al eliminar sorteo con ID: {}", id, e);
+            redirectAttributes.addFlashAttribute("error", 
+                "Error al eliminar el sorteo: " + e.getMessage());
+        }
+        
+        return "redirect:/create";
     }
 }

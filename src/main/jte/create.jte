@@ -81,8 +81,13 @@
             !{var formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");}
             <div class="sorteo-card">
               <div class="sorteo-header">
-                <h3>${sorteo.getNombre()}</h3>
-                <span class="sorteo-date">Creado: ${sorteo.getFechaCreacion().format(formatter)}</span>
+                <div>
+                  <h3>${sorteo.getNombre()}</h3>
+                  <span class="sorteo-date">Creado: ${sorteo.getFechaCreacion().format(formatter)}</span>
+                </div>
+                <button class="btn-delete-sorteo" onclick="deleteSorteo(${sorteo.getId()})">
+                  🗑️ Eliminar
+                </button>
               </div>
               
               <div class="participants-list">
@@ -157,6 +162,25 @@
         fetch('/api/participante/' + participanteId + '/resend', {method: 'POST'})
         .then(response => response.ok ? alert('Email enviado!') : alert('Error al enviar'))
         .catch(() => alert('Error de conexión'));
+      }
+    }
+
+    function deleteSorteo(sorteoId) {
+      if (confirm('¿Estás seguro de eliminar este sorteo?\n\nEsta acción eliminará el sorteo y todos sus participantes.')) {
+        // Crear un formulario oculto para hacer DELETE via POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/sorteo/' + sorteoId;
+        
+        // Añadir campo hidden para simular DELETE (Spring soporta _method)
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'DELETE';
+        form.appendChild(methodInput);
+        
+        document.body.appendChild(form);
+        form.submit();
       }
     }
   </script>
