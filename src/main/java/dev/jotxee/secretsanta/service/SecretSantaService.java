@@ -26,6 +26,12 @@ public class SecretSantaService {
                 .map(Participante::getNombre)
                 .toList();
         
-        return new RevealResponse(allNames, participante.getAsignadoA());
+        return new RevealResponse(
+            allNames, 
+            participante.getAsignadoA(),
+            participante.getNombre(),
+            participante.getGenero(),
+            participante.getSorteo().getNombre()
+        );
     }
 }

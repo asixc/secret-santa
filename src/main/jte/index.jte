@@ -2,6 +2,9 @@
 @param boolean hasToken
 @param List<String> names = null
 @param String assignedName = null
+@param String participantName = null
+@param String gender = null
+@param String sorteoName = null
 
 <!doctype html>
 <html lang="es">
@@ -40,7 +43,16 @@
           <div class="tree-trunk"></div>
         </div>
       </div>
-      <h1>¡Bienvenidx!</h1>
+      @if("mujer".equals(gender))
+        <h1>¡Bienvenida ${participantName}!</h1>
+      @elseif("hombre".equals(gender))
+        <h1>¡Bienvenido ${participantName}!</h1>
+      @else
+        <h1>¡Bienvenidx${participantName != null ? " " + participantName : ""}!</h1>
+      @endif
+      @if(sorteoName != null)
+        <p class="sorteo-name">al sorteo: <strong>${sorteoName}</strong></p>
+      @endif
       <h2>¡Descubre quién te ha tocado!</h2>
 
       <div class="controls">

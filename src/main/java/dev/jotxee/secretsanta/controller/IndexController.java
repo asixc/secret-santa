@@ -23,6 +23,9 @@ public class IndexController {
                 model.addAttribute("hasToken", true);
                 model.addAttribute("names", revealData.names());
                 model.addAttribute("assignedName", revealData.assigned());
+                model.addAttribute("participantName", revealData.participantName());
+                model.addAttribute("gender", revealData.gender());
+                model.addAttribute("sorteoName", revealData.sorteoName());
             } catch (Exception e) {
                 // Token inválido o no encontrado, mostrar mensaje de bienvenida
                 model.addAttribute("hasToken", false);

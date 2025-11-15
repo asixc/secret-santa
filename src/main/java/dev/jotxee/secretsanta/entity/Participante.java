@@ -33,6 +33,9 @@ public class Participante {
     @Column(nullable = false)
     private String email;
     
+    @Column(length = 10)
+    private String genero; // "hombre", "mujer", o null
+    
     @Column(nullable = false, unique = true)
     private String token;
     

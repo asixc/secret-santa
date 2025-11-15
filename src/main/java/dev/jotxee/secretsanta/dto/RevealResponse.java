@@ -4,5 +4,8 @@ import java.util.List;
 
 public record RevealResponse(
     List<String> names,
-    String assigned
+    String assigned,
+    String participantName,
+    String gender,  // "hombre", "mujer", o null
+    String sorteoName
 ) {}

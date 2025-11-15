@@ -79,6 +79,7 @@ public class CreateController {
                 Participante participante = new Participante();
                 participante.setNombre(dto.getNombre().trim());
                 participante.setEmail(dto.getEmail().trim());
+                participante.setGenero(dto.getGenero()); // Puede ser null
                 participante.setToken(UUID.randomUUID().toString());
                 participantes.add(participante);
             }

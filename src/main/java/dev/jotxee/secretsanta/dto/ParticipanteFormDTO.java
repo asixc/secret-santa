@@ -6,4 +6,5 @@ import lombok.Data;
 public class ParticipanteFormDTO {
     private String nombre;
     private String email;
+    private String genero; // "hombre" o "mujer"
 }

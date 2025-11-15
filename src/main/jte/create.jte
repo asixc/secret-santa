@@ -50,16 +50,28 @@
               <div class="participant-row">
                 <input type="text" name="participantes[0].nombre" required placeholder="Nombre del participante">
                 <input type="email" name="participantes[0].email" required placeholder="email@ejemplo.com">
+                <div class="gender-select">
+                  <label><input type="radio" name="participantes[0].genero" value="hombre"> 👨 Hombre</label>
+                  <label><input type="radio" name="participantes[0].genero" value="mujer"> 👩 Mujer</label>
+                </div>
                 <button type="button" class="btn-remove" onclick="removeParticipant(this)">🗑️</button>
               </div>
               <div class="participant-row">
                 <input type="text" name="participantes[1].nombre" required placeholder="Nombre del participante">
                 <input type="email" name="participantes[1].email" required placeholder="email@ejemplo.com">
+                <div class="gender-select">
+                  <label><input type="radio" name="participantes[1].genero" value="hombre"> 👨 Hombre</label>
+                  <label><input type="radio" name="participantes[1].genero" value="mujer"> 👩 Mujer</label>
+                </div>
                 <button type="button" class="btn-remove" onclick="removeParticipant(this)">🗑️</button>
               </div>
               <div class="participant-row">
                 <input type="text" name="participantes[2].nombre" required placeholder="Nombre del participante">
                 <input type="email" name="participantes[2].email" required placeholder="email@ejemplo.com">
+                <div class="gender-select">
+                  <label><input type="radio" name="participantes[2].genero" value="hombre"> 👨 Hombre</label>
+                  <label><input type="radio" name="participantes[2].genero" value="mujer"> 👩 Mujer</label>
+                </div>
                 <button type="button" class="btn-remove" onclick="removeParticipant(this)">🗑️</button>
               </div>
             </div>
@@ -130,6 +142,10 @@
       row.className = 'participant-row';
       row.innerHTML = '<input type="text" name="participantes[' + participantIndex + '].nombre" required placeholder="Nombre del participante">' +
         '<input type="email" name="participantes[' + participantIndex + '].email" required placeholder="email@ejemplo.com">' +
+        '<div class="gender-select">' +
+        '<label><input type="radio" name="participantes[' + participantIndex + '].genero" value="hombre"> 👨 Hombre</label>' +
+        '<label><input type="radio" name="participantes[' + participantIndex + '].genero" value="mujer"> 👩 Mujer</label>' +
+        '</div>' +
         '<button type="button" class="btn-remove" onclick="removeParticipant(this)">🗑️</button>';
       list.appendChild(row);
       participantIndex++;
