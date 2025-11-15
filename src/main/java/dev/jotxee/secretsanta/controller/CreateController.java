@@ -9,6 +9,7 @@ import dev.jotxee.secretsanta.repository.SorteoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -63,34 +64,28 @@ public class CreateController {
                 return "redirect:/create";
             }
 
-            // Crear el sorteo
-            Sorteo sorteo = new Sorteo();
-            sorteo.setNombre(sorteoForm.getNombre());
-            sorteo.setFechaCreacion(LocalDateTime.now());
-            sorteo.setActivo(true);
-            sorteo = sorteoRepository.save(sorteo);
-
-            log.info("Sorteo creado: {} con {} participantes", 
+            // Crear entidades en memoria (sin tocar BD todavía)
+            log.info("Creando sorteo: {} con {} participantes", 
                 sorteoForm.getNombre(), sorteoForm.getParticipantes().size());
 
-            // Crear lista de participantes
+            // Crear lista de participantes temporales (sin sorteo asignado aún)
             List<Participante> participantes = new ArrayList<>();
             for (ParticipanteFormDTO dto : sorteoForm.getParticipantes()) {
                 Participante participante = new Participante();
-                participante.setSorteo(sorteo);
                 participante.setNombre(dto.getNombre().trim());
                 participante.setEmail(dto.getEmail().trim());
                 participante.setToken(UUID.randomUUID().toString());
                 participantes.add(participante);
             }
 
-            // Asignar amigos invisibles (algoritmo de asignación aleatoria)
+            // ⚡ Calcular asignaciones SIN conexión a BD (puro cálculo en memoria)
             asignarAmigosInvisibles(participantes);
+            log.info("Asignaciones calculadas correctamente");
 
-            // Guardar todos los participantes
-            participanteRepository.saveAll(participantes);
+            // 💾 Ahora SÍ guardamos todo en una transacción atómica
+            guardarSorteoCompleto(sorteoForm.getNombre(), participantes);
 
-            log.info("Participantes guardados y asignados correctamente");
+            log.info("Sorteo y participantes guardados exitosamente");
 
             redirectAttributes.addFlashAttribute("success", 
                 "¡Sorteo creado exitosamente! Se han asignado los amigos invisibles a " + 
@@ -109,6 +104,26 @@ public class CreateController {
     }
 
     /**
+     * Guarda el sorteo y sus participantes en una transacción atómica.
+     * Si algo falla, se hace rollback de todo.
+     */
+    @Transactional
+    protected void guardarSorteoCompleto(String nombreSorteo, List<Participante> participantes) {
+        // Crear y guardar el sorteo
+        Sorteo sorteo = new Sorteo();
+        sorteo.setNombre(nombreSorteo);
+        sorteo.setFechaCreacion(LocalDateTime.now());
+        sorteo.setActivo(true);
+        sorteo = sorteoRepository.save(sorteo);
+
+        // Asignar el sorteo a todos los participantes
+        for (Participante participante : participantes) {
+            participante.setSorteo(sorteo);
+        }
+
+        // Guardar todos los participantes de una vez
+        participanteRepository.saveAll(participantes);
+    }    /**
      * Algoritmo para asignar amigos invisibles de forma aleatoria
      * Garantiza que nadie se tenga a sí mismo
      */
