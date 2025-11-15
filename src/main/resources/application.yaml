@@ -16,11 +16,9 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: false
-    show-sql: true
     properties:
       hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+    #    format_sql: true
   mvc:
     hiddenmethod:
       filter:
@@ -47,7 +45,7 @@ gg:
 logging:
   level:
     org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.orm.jdbc.bind: TRACE
 
 ---
 spring:
