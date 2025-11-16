@@ -4,10 +4,12 @@ import dev.jotxee.secretsanta.dto.ParticipanteFormDTO;
 import dev.jotxee.secretsanta.dto.SorteoFormDTO;
 import dev.jotxee.secretsanta.entity.Participante;
 import dev.jotxee.secretsanta.entity.Sorteo;
+import dev.jotxee.secretsanta.event.SorteoCreatedEvent;
 import dev.jotxee.secretsanta.repository.ParticipanteRepository;
 import dev.jotxee.secretsanta.repository.SorteoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -16,7 +18,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.SecureRandom;
@@ -30,6 +31,7 @@ public class CreateController {
 
     private final SorteoRepository sorteoRepository;
     private final ParticipanteRepository participanteRepository;
+    private final ApplicationEventPublisher eventPublisher;
     private final SecureRandom secureRandom = new SecureRandom();
 
     @GetMapping("/create")
@@ -91,13 +93,11 @@ public class CreateController {
             // 💾 Ahora SÍ guardamos todo en una transacción atómica
             guardarSorteoCompleto(sorteoForm.getNombre(), participantes);
 
-            log.info("Sorteo y participantes guardados exitosamente");
+            log.info("Sorteo y participantes guardados exitosamente. Evento publicado desde método transaccional.");
 
             redirectAttributes.addFlashAttribute("success", 
                 "¡Sorteo creado exitosamente! Se han asignado los amigos invisibles a " + 
                 participantes.size() + " participantes.");
-
-            // TODO: Enviar emails aquí cuando implementemos EmailService
             
             return "redirect:/create";
 
@@ -114,7 +114,7 @@ public class CreateController {
      * Si algo falla, se hace rollback de todo.
      */
     @Transactional
-    protected void guardarSorteoCompleto(String nombreSorteo, List<Participante> participantes) {
+    protected Sorteo guardarSorteoCompleto(String nombreSorteo, List<Participante> participantes) {
         // Crear y guardar el sorteo
         Sorteo sorteo = new Sorteo();
         sorteo.setNombre(nombreSorteo);
@@ -129,7 +129,28 @@ public class CreateController {
 
         // Guardar todos los participantes de una vez
         participanteRepository.saveAll(participantes);
-    }    /**
+        
+        // 🚀 Publicar evento DENTRO de la transacción
+        log.info("🚀 Publicando evento SorteoCreatedEvent para sorteo ID: {} desde método transaccional", sorteo.getId());
+        eventPublisher.publishEvent(new SorteoCreatedEvent(
+            sorteo.getId(),
+            sorteo.getNombre(),
+            participantes.stream()
+                    .map(p -> new SorteoCreatedEvent.ParticipantPayload(
+                            p.getId(),
+                            p.getNombre(),
+                            p.getEmail(),
+                            p.getAsignadoA(),
+                            p.getToken()
+                    ))
+                    .toList()
+        ));
+        log.info("✅ Evento SorteoCreatedEvent publicado exitosamente desde método transaccional");
+        
+        return sorteo;
+    }
+
+    /**
      * Algoritmo para asignar amigos invisibles de forma aleatoria
      * Garantiza que nadie se tenga a sí mismo
      */
