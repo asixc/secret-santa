@@ -1,28 +1,21 @@
 package dev.jotxee.secretsanta.controller;
 
-import dev.jotxee.secretsanta.dto.ParticipanteFormDTO;
 import dev.jotxee.secretsanta.dto.SorteoFormDTO;
-import dev.jotxee.secretsanta.entity.Participante;
 import dev.jotxee.secretsanta.entity.Sorteo;
-import dev.jotxee.secretsanta.event.SorteoCreatedEvent;
-import dev.jotxee.secretsanta.repository.ParticipanteRepository;
 import dev.jotxee.secretsanta.repository.SorteoRepository;
+import dev.jotxee.secretsanta.service.SorteoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -30,9 +23,7 @@ import java.util.*;
 public class CreateController {
 
     private final SorteoRepository sorteoRepository;
-    private final ParticipanteRepository participanteRepository;
-    private final ApplicationEventPublisher eventPublisher;
-    private final SecureRandom secureRandom = new SecureRandom();
+    private final SorteoService sorteoService;
 
     @GetMapping("/create")
     public String showCreatePage(Model model) {
@@ -57,148 +48,26 @@ public class CreateController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            // Validar que hay participantes
-            if (sorteoForm.getParticipantes() == null || sorteoForm.getParticipantes().isEmpty()) {
-                redirectAttributes.addFlashAttribute("error", 
-                    "Debe añadir participantes al sorteo");
-                return "redirect:/create";
-            }
-
-            // Validar que hay al menos 3 participantes
-            if (sorteoForm.getParticipantes().size() < 3) {
-                redirectAttributes.addFlashAttribute("error", 
-                    "Se necesitan al menos 3 participantes para crear un sorteo");
-                return "redirect:/create";
-            }
-
-            // Crear entidades en memoria (sin tocar BD todavía)
-            log.info("Creando sorteo: {} con {} participantes", 
-                sorteoForm.getNombre(), sorteoForm.getParticipantes().size());
-
-            // Crear lista de participantes temporales (sin sorteo asignado aún)
-            List<Participante> participantes = new ArrayList<>();
-            for (ParticipanteFormDTO dto : sorteoForm.getParticipantes()) {
-                Participante participante = new Participante();
-                participante.setNombre(dto.getNombre().trim());
-                participante.setEmail(dto.getEmail().trim());
-                participante.setGenero(dto.getGenero()); // Puede ser null
-                participante.setToken(UUID.randomUUID().toString());
-                participantes.add(participante);
-            }
-
-            // ⚡ Calcular asignaciones SIN conexión a BD (puro cálculo en memoria)
-            asignarAmigosInvisibles(participantes);
-            log.info("Asignaciones calculadas correctamente");
-
-            // 💾 Ahora SÍ guardamos todo en una transacción atómica
-            guardarSorteoCompleto(sorteoForm.getNombre(), participantes);
-
-            log.info("Sorteo y participantes guardados exitosamente. Evento publicado desde método transaccional.");
+            log.info("Recibida solicitud para crear sorteo: {}", sorteoForm.getNombre());
+            
+            // Delegar toda la lógica al servicio
+            Sorteo sorteo = sorteoService.crearSorteo(sorteoForm);
 
             redirectAttributes.addFlashAttribute("success", 
                 "¡Sorteo creado exitosamente! Se han asignado los amigos invisibles a " + 
-                participantes.size() + " participantes.");
+                sorteo.getParticipantes().size() + " participantes.");
             
             return "redirect:/create";
 
+        } catch (IllegalArgumentException e) {
+            log.warn("Error de validación al crear sorteo: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/create";
         } catch (Exception e) {
-            log.error("Error al crear sorteo", e);
+            log.error("Error inesperado al crear sorteo", e);
             redirectAttributes.addFlashAttribute("error", 
                 "Error al crear el sorteo: " + e.getMessage());
             return "redirect:/create";
-        }
-    }
-
-    /**
-     * Guarda el sorteo y sus participantes en una transacción atómica.
-     * Si algo falla, se hace rollback de todo.
-     */
-    @Transactional
-    protected Sorteo guardarSorteoCompleto(String nombreSorteo, List<Participante> participantes) {
-        // Crear y guardar el sorteo
-        Sorteo sorteo = new Sorteo();
-        sorteo.setNombre(nombreSorteo);
-        sorteo.setFechaCreacion(LocalDateTime.now());
-        sorteo.setActivo(true);
-        sorteo = sorteoRepository.save(sorteo);
-
-        // Asignar el sorteo a todos los participantes
-        for (Participante participante : participantes) {
-            participante.setSorteo(sorteo);
-        }
-
-        // Guardar todos los participantes de una vez
-        participanteRepository.saveAll(participantes);
-        
-        // 🚀 Publicar evento DENTRO de la transacción
-        log.info("🚀 Publicando evento SorteoCreatedEvent para sorteo ID: {} desde método transaccional", sorteo.getId());
-        eventPublisher.publishEvent(new SorteoCreatedEvent(
-            sorteo.getId(),
-            sorteo.getNombre(),
-            participantes.stream()
-                    .map(p -> new SorteoCreatedEvent.ParticipantPayload(
-                            p.getId(),
-                            p.getNombre(),
-                            p.getEmail(),
-                            p.getAsignadoA(),
-                            p.getToken()
-                    ))
-                    .toList()
-        ));
-        log.info("✅ Evento SorteoCreatedEvent publicado exitosamente desde método transaccional");
-        
-        return sorteo;
-    }
-
-    /**
-     * Algoritmo para asignar amigos invisibles de forma aleatoria
-     * Garantiza que nadie se tenga a sí mismo
-     */
-    private void asignarAmigosInvisibles(List<Participante> participantes) {
-        int size = participantes.size();
-        
-        if (size < 3) {
-            throw new IllegalArgumentException("Se necesitan al menos 3 participantes");
-        }
-
-        // Crear lista de índices y mezclarla
-        List<Integer> indices = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            indices.add(i);
-        }
-
-        // Intentar hasta conseguir una asignación válida (sin auto-asignaciones)
-        boolean valid = false;
-        int intentos = 0;
-        final int MAX_INTENTOS = 100;
-
-        while (!valid && intentos < MAX_INTENTOS) {
-            // Usar SecureRandom para shuffle verdaderamente aleatorio
-            Collections.shuffle(indices, secureRandom);
-            valid = true;
-
-            // Verificar que nadie se tiene a sí mismo
-            for (int i = 0; i < size; i++) {
-                if (indices.get(i) == i) {
-                    valid = false;
-                    break;
-                }
-            }
-            intentos++;
-        }
-
-        if (!valid) {
-            throw new RuntimeException("No se pudo generar una asignación válida después de " + MAX_INTENTOS + " intentos");
-        }
-
-        // Asignar los amigos invisibles
-        for (int i = 0; i < size; i++) {
-            int asignadoIndex = indices.get(i);
-            participantes.get(i).setAsignadoA(participantes.get(asignadoIndex).getNombre());
-            
-            log.debug("Asignación: {} → {}", 
-                participantes.get(i).getNombre(), 
-                participantes.get(asignadoIndex).getNombre());
         }
     }
 
@@ -208,7 +77,7 @@ public class CreateController {
     @DeleteMapping("/sorteo/{id}")
     public String deleteSorteo(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
-            Optional<Sorteo> sorteoOpt = sorteoRepository.findById(id);
+            var sorteoOpt = sorteoRepository.findById(id);
             
             if (sorteoOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", 
