@@ -33,11 +33,13 @@ LABEL org.opencontainers.image.authors="jotxee"
 LABEL org.opencontainers.image.source="https://github.com/jotxee/secretsanta"
 
 # Install required packages and create user
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     tzdata \
-    && addgroup -g 1000 appuser \
-    && adduser -D -u 1000 -G appuser appuser
+    ca-certificates \
+    && groupadd -g 1000 appuser \
+    && useradd -m -u 1000 -g appuser -s /bin/bash appuser \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
