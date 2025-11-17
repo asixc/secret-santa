@@ -37,8 +37,6 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService users() {
-        log.info("Admin username: {}", adminUser);
-        log.info("Admin password: {}", adminPassword);
         UserDetails user = User.withUsername(adminUser)
             .password("{noop}" + adminPassword)
             .roles("ADMIN")
