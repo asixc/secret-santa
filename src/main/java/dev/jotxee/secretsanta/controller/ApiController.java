@@ -7,11 +7,14 @@ import dev.jotxee.secretsanta.repository.ParticipanteRepository;
 import dev.jotxee.secretsanta.service.EmailService;
 import dev.jotxee.secretsanta.service.SecretSantaService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -33,25 +36,9 @@ public class ApiController {
     
     @PostMapping("/participante/{id}/resend")
     public ResponseEntity<Void> resendEmail(@PathVariable Long id) {
+        log.info("🧪 Reenviando email al participante con ID: {}", id);
         try {
-            Participante participante = participanteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Participante no encontrado"));
-            
-            var payload = new SorteoCreatedEvent.ParticipantPayload(
-                participante.getId(),
-                participante.getNombre(),
-                participante.getEmail(),
-                participante.getAsignadoA(),
-                participante.getToken()
-            );
-            
-            emailService.sendParticipantEmail(
-                participante.getSorteo().getNombre(),
-                participante.getSorteo().getImporteMinimo(),
-                participante.getSorteo().getImporteMaximo(),
-                payload
-            );
-            
+            secretSantaService.reenviarEmailParticipante(id);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -60,6 +47,7 @@ public class ApiController {
     
     @PutMapping("/participante/{id}/email")
     public ResponseEntity<Void> updateEmail(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        log.info("Actualizando email del participante con ID: {}", id);
         try {
             String newEmail = body.get("email");
             if (newEmail == null || newEmail.isBlank()) {

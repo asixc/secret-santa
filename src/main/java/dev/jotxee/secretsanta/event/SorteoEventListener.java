@@ -36,4 +36,21 @@ public class SorteoEventListener {
             throw e;
         }
     }
+
+    @EventListener
+    public void handleReenvioEmailParticipante(ReenvioEmailParticipanteEvent event) {
+        log.info("🔄 Reenvío de email solicitado para participante {} en sorteo '{}'", event.participant().email(), event.sorteoName());
+        try {
+            emailService.sendParticipantEmail(
+                event.sorteoName(),
+                event.importeMinimo(),
+                event.importeMaximo(),
+                event.participant()
+            );
+            log.info("✅ Email reenviado correctamente a {}", event.participant().email());
+        } catch (Exception e) {
+            log.error("❌ Error reenviando email a {}", event.participant().email(), e);
+            throw e;
+        }
+    }
 }

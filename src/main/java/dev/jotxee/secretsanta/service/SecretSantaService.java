@@ -2,8 +2,12 @@ package dev.jotxee.secretsanta.service;
 
 import dev.jotxee.secretsanta.dto.RevealResponse;
 import dev.jotxee.secretsanta.entity.Participante;
+import dev.jotxee.secretsanta.entity.Sorteo;
+import dev.jotxee.secretsanta.event.ReenvioEmailParticipanteEvent;
+import dev.jotxee.secretsanta.event.SorteoCreatedEvent;
 import dev.jotxee.secretsanta.repository.ParticipanteRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +18,7 @@ import java.util.List;
 public class SecretSantaService {
     
     private final ParticipanteRepository participanteRepository;
+    private final ApplicationEventPublisher eventPublisher;
     
     @Transactional(readOnly = true)
     public RevealResponse getRevealData(String token) {
@@ -35,5 +40,26 @@ public class SecretSantaService {
             participante.getSorteo().getImporteMinimo(),
             participante.getSorteo().getImporteMaximo()
         );
+    }
+    
+    @Transactional
+    public void reenviarEmailParticipante(Long participanteId) {
+        Participante participante = participanteRepository.findById(participanteId)
+            .orElseThrow(() -> new RuntimeException("Participante no encontrado"));
+        Sorteo sorteo = participante.getSorteo();
+        SorteoCreatedEvent.ParticipantPayload payload = new SorteoCreatedEvent.ParticipantPayload(
+            participante.getId(),
+            participante.getNombre(),
+            participante.getEmail(),
+            participante.getAsignadoA(),
+            participante.getToken()
+        );
+        ReenvioEmailParticipanteEvent evento = new ReenvioEmailParticipanteEvent(
+            sorteo.getNombre(),
+            sorteo.getImporteMinimo(),
+            sorteo.getImporteMaximo(),
+            payload
+        );
+        eventPublisher.publishEvent(evento);
     }
 }
