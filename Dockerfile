@@ -32,13 +32,13 @@ LABEL org.opencontainers.image.description="A Secret Santa web application"
 LABEL org.opencontainers.image.authors="jotxee"
 LABEL org.opencontainers.image.source="https://github.com/jotxee/secretsanta"
 
-# Install required packages and create user
+# Install required packages and create non-root user (sin fijar UID/GID para evitar colisiones)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     tzdata \
     ca-certificates \
-    && groupadd -g 1000 appuser \
-    && useradd -m -u 1000 -g appuser -s /bin/bash appuser \
+    && groupadd -f appuser \
+    && useradd -m -g appuser -s /bin/bash appuser \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
