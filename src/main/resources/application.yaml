@@ -47,6 +47,14 @@ app:
   mail:
     from: ${MAIL_FROM:no-reply@secretsanta.local}
 
+# Actuator configuration (Spring Boot 4.0.0-SNAPSHOT)
+# Note: IDE may show warnings for these properties because metadata is not yet available for snapshot versions
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics"
+
 logging:
   level:
     "[org.hibernate.SQL]": DEBUG
