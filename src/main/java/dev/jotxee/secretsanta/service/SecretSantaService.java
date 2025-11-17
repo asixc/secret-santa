@@ -24,16 +24,23 @@ public class SecretSantaService {
     public RevealResponse getRevealData(String token) {
         Participante participante = participanteRepository.findByToken(token)
                 .orElseThrow(() -> new RuntimeException("Token inválido o no encontrado"));
-        
-        // Obtener todos los nombres del sorteo
-        List<String> allNames = participanteRepository.findBySorteoId(participante.getSorteo().getId())
-                .stream()
+
+        // Obtener todos los participantes del sorteo
+        List<Participante> participantes = participanteRepository.findBySorteoId(participante.getSorteo().getId());
+
+        // Desencriptar el email asignado
+        String asignadoAEmail = participante.getAsignadoA();
+        String nombreAsignado = participantes.stream()
+                .filter(p -> p.getEmail().equalsIgnoreCase(asignadoAEmail))
                 .map(Participante::getNombre)
-                .toList();
-        
+                .findFirst()
+                .orElse("(desconocido)");
+
+        List<String> allNames = participantes.stream().map(Participante::getNombre).toList();
+
         return new RevealResponse(
-            allNames, 
-            participante.getAsignadoA(),
+            allNames,
+            nombreAsignado,
             participante.getNombre(),
             participante.getGenero(),
             participante.getSorteo().getNombre(),
