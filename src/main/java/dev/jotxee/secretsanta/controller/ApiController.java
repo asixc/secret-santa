@@ -65,4 +65,16 @@ public class ApiController {
             return ResponseEntity.badRequest().build();
         }
     }
+    
+    @GetMapping("/decrypt-email")
+    public ResponseEntity<String> decryptEmail(@RequestParam String value) {
+        try {
+            String decrypted = new dev.jotxee.secretsanta.util.EmailCryptoService(
+                dev.jotxee.secretsanta.entity.EmailEncryptConverter.staticKey
+            ).decrypt(value);
+            return ResponseEntity.ok(decrypted);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("No se pudo desencriptar: " + e.getMessage());
+        }
+    }
 }

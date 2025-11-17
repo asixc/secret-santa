@@ -134,10 +134,10 @@ public class SorteoService {
             }
         } while (!asignacionValida);
 
-        // Asignar los nombres según el orden barajado
+        // Asignar los emails cifrados según el orden barajado
         for (int i = 0; i < size; i++) {
             int asignadoIndex = indices.get(i);
-            participantes.get(i).setAsignadoA(participantes.get(asignadoIndex).getNombre());
+            participantes.get(i).setAsignadoA(participantes.get(asignadoIndex).getEmail());
         }
 
         log.debug("Asignaciones generadas en {} intentos", intentos);

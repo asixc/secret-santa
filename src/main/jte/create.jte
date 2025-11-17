@@ -148,7 +148,7 @@
                       <span class="participant-name">👤 ${participante.getNombre()}</span>
                       <span class="participant-email">📧 ${participante.getEmail()}</span>
                       @if(participante.getAsignadoA() != null && !participante.getAsignadoA().isEmpty())
-                        <span class="participant-assigned">🎁 → ${participante.getAsignadoA()}</span>
+                        <span class="participant-assigned">🎁 → ${participante.getAsignadoAEncrypted()}</span>
                       @else
                         <span class="participant-assigned">🎁 → Sin asignar</span>
                       @endif

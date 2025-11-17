@@ -1,5 +1,6 @@
 package dev.jotxee.secretsanta.entity;
 
+import dev.jotxee.secretsanta.util.EmailCryptoService;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,6 +32,7 @@ public class Participante {
     private String nombre;
     
     @Column(nullable = false)
+    @Convert(converter = EmailEncryptConverter.class)
     private String email;
     
     @Column(length = 10)
@@ -40,12 +42,27 @@ public class Participante {
     private String token;
     
     @Column(name = "asignado_a")
-    private String asignadoA;
+    @Convert(converter = EmailEncryptConverter.class)
+    private String asignadoA; // aquí se almacena el email cifrado del asignado
     
     @PrePersist
     protected void onCreate() {
         if (token == null) {
             token = UUID.randomUUID().toString();
         }
+    }
+
+    public String getAsignadoAEncrypted() {
+        if (this.asignadoA == null || this.asignadoA.isEmpty()) return null;
+        // Vuelve a cifrar el valor desencriptado para mostrarlo siempre cifrado
+        // Usa la misma clave estática que el converter
+        return new EmailCryptoService(
+            EmailEncryptConverter.staticKey
+        ).encrypt(this.getAsignadoA());
+    }
+
+    public String getEmailEncrypted() {
+        if (this.email == null || this.email.isEmpty()) return null;
+        return new EmailCryptoService(EmailEncryptConverter.staticKey).encrypt(this.getEmail());
     }
 }

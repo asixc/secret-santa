@@ -1,6 +1,8 @@
 package dev.jotxee.secretsanta.service;
 
+import dev.jotxee.secretsanta.entity.EmailEncryptConverter;
 import dev.jotxee.secretsanta.event.SorteoCreatedEvent;
+import dev.jotxee.secretsanta.util.EmailCryptoService;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +32,7 @@ public class EmailService {
     @Async
     public void sendParticipantEmail(String sorteoName, Double importeMinimo, Double importeMaximo, 
                                       SorteoCreatedEvent.ParticipantPayload participant) {
-        log.info("📧 Iniciando envío de email HTML a {} para sorteo '{}'", participant.email(), sorteoName);
+        log.info("📧 Iniciando envío de email HTML a {} para sorteo '{}'", new EmailCryptoService(EmailEncryptConverter.staticKey).encrypt(participant.email()), sorteoName);
         
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -51,9 +53,11 @@ public class EmailService {
             helper.setText(htmlContent, true);
             
             mailSender.send(mimeMessage);
-            log.info("✅ Email HTML enviado exitosamente a {}", participant.email());
+            log.info("✅ Email HTML enviado exitosamente a {}", 
+            new EmailCryptoService(EmailEncryptConverter.staticKey).encrypt(participant.email())
+            );
         } catch (Exception ex) {
-            log.error("❌ Error al enviar email a {}", participant.email(), ex);
+            log.error("❌ Error al enviar email a {}", new EmailCryptoService(EmailEncryptConverter.staticKey).encrypt(participant.email()), ex);
         }
     }
 
