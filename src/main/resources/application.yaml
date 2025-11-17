@@ -48,6 +48,10 @@ app:
     from: ${MAIL_FROM:no-reply@secretsanta.local}
   email-crypto-key: ${EMAIL_CRYPTO_KEY:mySuperSecretKey123}
 
+admin:
+  user: ${ADMIN_USER:admin}
+  password: ${ADMIN_PASSWORD:adminpassword}
+
 # Actuator configuration (Spring Boot 4.0.0-SNAPSHOT)
 # Note: IDE may show warnings for these properties because metadata is not yet available for snapshot versions
 management:
