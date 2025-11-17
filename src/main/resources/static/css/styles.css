@@ -6,6 +6,8 @@ body{min-height:100vh;background:linear-gradient(180deg,#071133 0%,#081426 60%);
 h1{text-align:center;margin-bottom:18px}
 .sorteo-name{font-size:1.1rem;color:#9aa4b2;margin:0 0 1rem 0;text-align:center}
 .sorteo-name strong{color:#ff7a59}
+.gift-price{font-size:1rem;color:#4caf50;margin:0 0 1.5rem 0;text-align:center;font-weight:600}
+.gift-price strong{color:#66bb6a}
 
 /* Árbol de Navidad */
 .tree-container{margin:1rem auto 1.5rem;display:flex;justify-content:center}

@@ -41,7 +41,12 @@ public class SorteoEventDiagnostic {
         if (!event.participants().isEmpty()) {
             var firstParticipant = event.participants().get(0);
             log.info("📧 Enviando email de prueba a primer participante: {}", firstParticipant.email());
-            emailService.sendParticipantEmail(event.sorteoName() + " (AFTER_COMMIT)", firstParticipant);
+            emailService.sendParticipantEmail(
+                event.sorteoName() + " (AFTER_COMMIT)", 
+                event.importeMinimo(),
+                event.importeMaximo(),
+                firstParticipant
+            );
         }
     }
 

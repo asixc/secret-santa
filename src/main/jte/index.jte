@@ -5,6 +5,8 @@
 @param String participantName = null
 @param String gender = null
 @param String sorteoName = null
+@param Double importeMinimo = null
+@param Double importeMaximo = null
 
 <!doctype html>
 <html lang="es">
@@ -52,6 +54,18 @@
       @endif
       @if(sorteoName != null)
         <p class="sorteo-name">al sorteo: <strong>${sorteoName}</strong></p>
+      @endif
+      @if(importeMinimo != null || importeMaximo != null)
+        <p class="gift-price">
+          💰 Presupuesto del regalo: 
+          @if(importeMinimo != null && importeMaximo != null)
+            <strong>${importeMinimo}€ - ${importeMaximo}€</strong>
+          @elseif(importeMinimo != null)
+            <strong>Desde ${importeMinimo}€</strong>
+          @else
+            <strong>Hasta ${importeMaximo}€</strong>
+          @endif
+        </p>
       @endif
       <h2>¡Descubre quién te ha tocado!</h2>
 

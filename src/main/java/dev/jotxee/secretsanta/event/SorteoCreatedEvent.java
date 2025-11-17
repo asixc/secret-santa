@@ -9,6 +9,8 @@ import java.util.List;
 public record SorteoCreatedEvent(
         Long sorteoId,
         String sorteoName,
+        Double importeMinimo,
+        Double importeMaximo,
         List<ParticipantPayload> participants
 ) {
 

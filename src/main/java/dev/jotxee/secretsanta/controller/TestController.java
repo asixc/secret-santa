@@ -29,7 +29,7 @@ public class TestController {
         SorteoCreatedEvent.ParticipantPayload testParticipant = 
             new SorteoCreatedEvent.ParticipantPayload(1L, "Test User", email, "Test Assigned", "test-token");
             
-        emailService.sendParticipantEmail("Sorteo de Prueba", testParticipant);
+        emailService.sendParticipantEmail("Sorteo de Prueba", 20.0, 50.0, testParticipant);
         
         return "Email de prueba enviado a " + email;
     }
@@ -41,6 +41,8 @@ public class TestController {
         SorteoCreatedEvent testEvent = new SorteoCreatedEvent(
             999L,
             "Sorteo de Prueba Evento",
+            20.0,
+            50.0,
             List.of(new SorteoCreatedEvent.ParticipantPayload(1L, "Test User", email, "Test Assigned", "test-token"))
         );
         
@@ -57,6 +59,8 @@ public class TestController {
         SorteoCreatedEvent testEvent = new SorteoCreatedEvent(
             888L,
             "Sorteo de Prueba Transaccional",
+            20.0,
+            50.0,
             List.of(new SorteoCreatedEvent.ParticipantPayload(1L, "Test User", email, "Test Assigned", "test-token"))
         );
         

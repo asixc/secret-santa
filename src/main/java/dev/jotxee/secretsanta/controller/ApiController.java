@@ -47,6 +47,8 @@ public class ApiController {
             
             emailService.sendParticipantEmail(
                 participante.getSorteo().getNombre(),
+                participante.getSorteo().getImporteMinimo(),
+                participante.getSorteo().getImporteMaximo(),
                 payload
             );
             

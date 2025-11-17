@@ -28,7 +28,8 @@ public class EmailService {
     private String defaultSender;
 
     @Async
-    public void sendParticipantEmail(String sorteoName, SorteoCreatedEvent.ParticipantPayload participant) {
+    public void sendParticipantEmail(String sorteoName, Double importeMinimo, Double importeMaximo, 
+                                      SorteoCreatedEvent.ParticipantPayload participant) {
         log.info("📧 Iniciando envío de email HTML a {} para sorteo '{}'", participant.email(), sorteoName);
         
         try {
@@ -45,6 +46,7 @@ public class EmailService {
             htmlContent = htmlContent.replace("{{PARTICIPANT_NAME}}", participant.name());
             htmlContent = htmlContent.replace("{{SORTEO_NAME}}", sorteoName);
             htmlContent = htmlContent.replace("{{REVEAL_URL}}", buildRevealUrl(participant.token()));
+            htmlContent = htmlContent.replace("{{GIFT_BUDGET}}", buildGiftBudgetText(importeMinimo, importeMaximo));
             
             helper.setText(htmlContent, true);
             
@@ -74,6 +76,9 @@ public class EmailService {
                         <h1 style="color: #c31432;">🎅 Amigo Invisible</h1>
                         <p>¡Hola <strong>{{PARTICIPANT_NAME}}</strong>!</p>
                         <p>Sorteo: <strong>{{SORTEO_NAME}}</strong></p>
+                        <p style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                            💰 <strong>Presupuesto del regalo:</strong> {{GIFT_BUDGET}}
+                        </p>
                         <div style="text-align: center; margin: 30px 0;">
                             <a href="{{REVEAL_URL}}" style="background: #c31432; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px;">
                                 🎁 Ver Mi Amigo Invisible
@@ -84,6 +89,20 @@ public class EmailService {
                 </body>
                 </html>
                 """;
+    }
+
+    private String buildGiftBudgetText(Double importeMinimo, Double importeMaximo) {
+        if (importeMinimo == null && importeMaximo == null) {
+            return "";
+        }
+        
+        if (importeMinimo != null && importeMaximo != null) {
+            return String.format("%.2f€ - %.2f€", importeMinimo, importeMaximo);
+        } else if (importeMinimo != null) {
+            return String.format("Desde %.2f€", importeMinimo);
+        } else {
+            return String.format("Hasta %.2f€", importeMaximo);
+        }
     }
 
     private String buildRevealUrl(String token) {

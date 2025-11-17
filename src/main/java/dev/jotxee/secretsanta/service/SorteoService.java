@@ -182,6 +182,8 @@ public class SorteoService {
         SorteoCreatedEvent evento = new SorteoCreatedEvent(
             sorteo.getId(),
             sorteo.getNombre(),
+            sorteo.getImporteMinimo(),
+            sorteo.getImporteMaximo(),
             participantes.stream()
                     .map(p -> new SorteoCreatedEvent.ParticipantPayload(
                             p.getId(),
