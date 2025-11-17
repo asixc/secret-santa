@@ -53,11 +53,11 @@
         <h1>¡Bienvenidx${participantName != null ? " " + participantName : ""}!</h1>
       @endif
       @if(sorteoName != null)
-        <p class="sorteo-name">al sorteo: <strong>${sorteoName}</strong></p>
+        <p class="sorteo-name">Sorteo: <strong>${sorteoName}</strong></p>
       @endif
       @if(importeMinimo != null || importeMaximo != null)
-        <p class="gift-price">
-          💰 Presupuesto del regalo: 
+        <p class="sorteo-name">
+          Presupuesto del regalo: 
           @if(importeMinimo != null && importeMaximo != null)
             <strong>${importeMinimo}€ - ${importeMaximo}€</strong>
           @elseif(importeMinimo != null)

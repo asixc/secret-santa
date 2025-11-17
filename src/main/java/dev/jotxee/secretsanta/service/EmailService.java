@@ -40,7 +40,7 @@ public class EmailService {
             if (StringUtils.hasText(defaultSender)) {
                 helper.setFrom(defaultSender);
             }
-            helper.setSubject("🎅 Tu Amigo Invisible: " + sorteoName);
+            helper.setSubject("🎅 Resultado del sorteo: " + sorteoName);
             
             String htmlContent = loadEmailTemplate();
             htmlContent = htmlContent.replace("{{PARTICIPANT_NAME}}", participant.name());
