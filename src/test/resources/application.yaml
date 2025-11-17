@@ -19,6 +19,13 @@ spring:
           auth: false
           starttls:
             enable: false
+gg:
+  jte:
+    development-mode: true
+
+app:
+  base-url: http://localhost:8080
+  email-crypto-key: test-key
 
 logging:
   level:
