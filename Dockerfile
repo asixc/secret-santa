@@ -19,10 +19,13 @@ RUN ./gradlew dependencies --no-daemon || return 0
 # Copy source code
 COPY src/ src/
 
-# Build application
-RUN ./gradlew build -x test --no-daemon && \
-    rm -rf build/tmp && \
-    java -Djarmode=tools -jar build/libs/*.jar extract --layers --destination build/extracted
+# Build application y extrae capas del boot jar (evita el plain jar)
+RUN set -euo pipefail; \
+    ./gradlew build -x test --no-daemon; \
+    BOOT_JAR=$(find build/libs -maxdepth 1 -name "*-SNAPSHOT.jar" ! -name "*-plain.jar" | head -n1); \
+    if [ -z "$BOOT_JAR" ]; then echo "No se encontró boot jar"; exit 1; fi; \
+    java -Djarmode=tools -jar "$BOOT_JAR" extract --layers --destination build/extracted; \
+    rm -rf build/tmp
 
 # Runtime stage
 FROM eclipse-temurin:25.0.1_8-jre-noble
