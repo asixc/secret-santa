@@ -1,13 +1,17 @@
 # syntax=docker/dockerfile:1
 
 # Build stage
-FROM gradle:8.11.1-jdk25-alpine AS build
+# Usamos Temurin JDK 25 base (tag noble) y el gradle wrapper del repo
+FROM eclipse-temurin:25.0.1_8-jdk-noble AS build
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl unzip bash ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy gradle files first for better layer caching
+# Copiamos wrapper/gradle config primero para cachear dependencias
 COPY gradle/ gradle/
 COPY gradlew build.gradle settings.gradle ./
+RUN chmod +x gradlew
 
 # Download dependencies (cached layer)
 RUN ./gradlew dependencies --no-daemon || return 0
@@ -21,7 +25,7 @@ RUN ./gradlew build -x test --no-daemon && \
     java -Djarmode=tools -jar build/libs/*.jar extract --layers --destination build/extracted
 
 # Runtime stage
-FROM eclipse-temurin:25-jre-alpine
+FROM eclipse-temurin:25.0.1_8-jre-noble
 
 LABEL org.opencontainers.image.title="Secret Santa"
 LABEL org.opencontainers.image.description="A Secret Santa web application"
