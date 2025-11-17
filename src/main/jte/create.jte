@@ -39,9 +39,32 @@
         <h2>✨ Crear Nuevo Sorteo</h2>
         <form action="/create" method="post" class="create-form">
           <div class="form-group">
-            <label for="sorteoNombre">Nombre del Sorteo</label>
+            <label for="sorteoNombre">Nombre del Sorteo (visible para participantes)</label>
             <input type="text" id="sorteoNombre" name="nombre" required 
                    placeholder="Ej: Amigo Invisible Familia 2025">
+            <small>Este nombre aparecerá en los emails y en la página de reveal</small>
+          </div>
+
+          <div class="form-group">
+            <label for="sorteoNombreInterno">Nombre Interno (para administración)</label>
+            <input type="text" id="sorteoNombreInterno" name="nombreInterno" 
+                   placeholder="Ej: Amigo invisible navidad 2025 familia Sánchez">
+            <small>Nombre histórico para referencias año tras año. Opcional.</small>
+          </div>
+
+          <div class="form-group">
+            <label>Importe del Regalo</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <input type="number" name="importeMinimo" step="0.01" min="0" 
+                       placeholder="Mínimo (€)" style="width: 100%;">
+              </div>
+              <div>
+                <input type="number" name="importeMaximo" step="0.01" min="0" 
+                       placeholder="Máximo (€)" style="width: 100%;">
+              </div>
+            </div>
+            <small>Define la franja de precio del regalo. Ambos campos son opcionales.</small>
           </div>
 
           <div class="participants-section">
@@ -95,6 +118,21 @@
               <div class="sorteo-header">
                 <div>
                   <h3>${sorteo.getNombre()}</h3>
+                  @if(sorteo.getNombreInterno() != null && !sorteo.getNombreInterno().isEmpty())
+                    <span class="sorteo-internal-name">📁 ${sorteo.getNombreInterno()}</span>
+                  @endif
+                  @if(sorteo.getImporteMinimo() != null || sorteo.getImporteMaximo() != null)
+                    <span class="sorteo-price">
+                      💰 
+                      @if(sorteo.getImporteMinimo() != null && sorteo.getImporteMaximo() != null)
+                        ${sorteo.getImporteMinimo()}€ - ${sorteo.getImporteMaximo()}€
+                      @elseif(sorteo.getImporteMinimo() != null)
+                        Desde ${sorteo.getImporteMinimo()}€
+                      @else
+                        Hasta ${sorteo.getImporteMaximo()}€
+                      @endif
+                    </span>
+                  @endif
                   <span class="sorteo-date">Creado: ${sorteo.getFechaCreacion().format(formatter)}</span>
                 </div>
                 <button class="btn-delete-sorteo" onclick="deleteSorteo(${sorteo.getId()})">

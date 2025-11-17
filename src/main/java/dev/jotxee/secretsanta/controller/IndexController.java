@@ -26,6 +26,8 @@ public class IndexController {
                 model.addAttribute("participantName", revealData.participantName());
                 model.addAttribute("gender", revealData.gender());
                 model.addAttribute("sorteoName", revealData.sorteoName());
+                model.addAttribute("importeMinimo", revealData.importeMinimo());
+                model.addAttribute("importeMaximo", revealData.importeMaximo());
             } catch (Exception e) {
                 // Token inválido o no encontrado, mostrar mensaje de bienvenida
                 model.addAttribute("hasToken", false);

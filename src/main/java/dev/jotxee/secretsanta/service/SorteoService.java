@@ -52,7 +52,13 @@ public class SorteoService {
         log.info("Asignaciones calculadas correctamente para {} participantes", participantes.size());
 
         // Guardar en base de datos
-        Sorteo sorteo = guardarSorteoConParticipantes(sorteoForm.getNombre(), participantes);
+        Sorteo sorteo = guardarSorteoConParticipantes(
+            sorteoForm.getNombre(), 
+            sorteoForm.getNombreInterno(),
+            sorteoForm.getImporteMinimo(),
+            sorteoForm.getImporteMaximo(),
+            participantes
+        );
 
         // Publicar evento
         publicarEventoSorteoCreado(sorteo, participantes);
@@ -140,10 +146,15 @@ public class SorteoService {
     /**
      * Guarda el sorteo y sus participantes en la base de datos.
      */
-    private Sorteo guardarSorteoConParticipantes(String nombreSorteo, List<Participante> participantes) {
+    private Sorteo guardarSorteoConParticipantes(String nombreSorteo, String nombreInterno, 
+                                                   Double importeMinimo, Double importeMaximo,
+                                                   List<Participante> participantes) {
         // Crear y guardar el sorteo
         Sorteo sorteo = new Sorteo();
         sorteo.setNombre(nombreSorteo);
+        sorteo.setNombreInterno(nombreInterno);
+        sorteo.setImporteMinimo(importeMinimo);
+        sorteo.setImporteMaximo(importeMaximo);
         sorteo.setFechaCreacion(LocalDateTime.now());
         sorteo.setActivo(true);
         sorteo = sorteoRepository.save(sorteo);

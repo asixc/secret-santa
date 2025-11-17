@@ -23,6 +23,15 @@ public class Sorteo {
     @Column(nullable = false)
     private String nombre;
     
+    @Column(name = "nombre_interno")
+    private String nombreInterno;
+    
+    @Column(name = "importe_minimo")
+    private Double importeMinimo;
+    
+    @Column(name = "importe_maximo")
+    private Double importeMaximo;
+    
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
     

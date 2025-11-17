@@ -7,5 +7,7 @@ public record RevealResponse(
     String assigned,
     String participantName,
     String gender,  // "hombre", "mujer", o null
-    String sorteoName
+    String sorteoName,
+    Double importeMinimo,
+    Double importeMaximo
 ) {}

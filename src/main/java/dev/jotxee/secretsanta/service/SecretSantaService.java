@@ -31,7 +31,9 @@ public class SecretSantaService {
             participante.getAsignadoA(),
             participante.getNombre(),
             participante.getGenero(),
-            participante.getSorteo().getNombre()
+            participante.getSorteo().getNombre(),
+            participante.getSorteo().getImporteMinimo(),
+            participante.getSorteo().getImporteMaximo()
         );
     }
 }
