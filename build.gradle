@@ -33,7 +33,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'gg.jte:jte-spring-boot-starter-3:3.1.16'
-	implementation 'gg.jte:jte:3.1.16' 
+	implementation 'gg.jte:jte-html:3.1.16'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
