@@ -43,8 +43,23 @@ dependencies {
 }
 
 jte {
-	generate()
-	binaryStaticContent = true
+    // ⛔ Antes: generate()
+    // ✅ Ahora: precompile() → genera las clases precompiladas
+    precompile()
+    binaryStaticContent = true
+}
+
+/**
+ * Muy importante:
+ * - precompileJte genera las clases en el directorio por defecto "jte-classes"
+ * - aquí las metemos dentro del bootJar, para que Spring/JTE pueda cargarlas en prod
+ */
+tasks.named('bootJar') {
+    dependsOn tasks.precompileJte
+
+    from("jte-classes") {
+        include("**/*.class")
+    }
 }
 
 tasks.named('test') {

@@ -40,7 +40,8 @@ spring:
 
 gg:
   jte:
-    development-mode: true
+    development-mode: true           # para local
+    usePrecompiledTemplates: false   # en local, que tire de ficheros
 
 app:
   base-url: ${APP_BASE_URL:http://localhost:8080}
@@ -79,7 +80,7 @@ spring:
     password: ${POSTGRES_API_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update   # en vez de validate
     show-sql: false
   mail:
     host: ${MAIL_HOST}
@@ -89,7 +90,8 @@ spring:
 
 gg:
   jte:
-    development-mode: false
+    development-mode: false          # en prod NO hot reload
+    usePrecompiledTemplates: true    # 👉 usa las plantillas precompiladas
 
 logging:
   level:
