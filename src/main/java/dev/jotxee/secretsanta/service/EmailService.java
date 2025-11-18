@@ -3,6 +3,7 @@ package dev.jotxee.secretsanta.service;
 import dev.jotxee.secretsanta.entity.EmailEncryptConverter;
 import dev.jotxee.secretsanta.event.SorteoCreatedEvent;
 import dev.jotxee.secretsanta.util.EmailCryptoService;
+import dev.jotxee.secretsanta.util.CurrencyFormatter;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -101,11 +102,11 @@ public class EmailService {
         }
         
         if (importeMinimo != null && importeMaximo != null) {
-            return String.format("%.2f€ - %.2f€", importeMinimo, importeMaximo);
+            return CurrencyFormatter.formatAmount(importeMinimo) + "€ - " + CurrencyFormatter.formatAmount(importeMaximo) + "€";
         } else if (importeMinimo != null) {
-            return String.format("Desde %.2f€", importeMinimo);
+            return "Desde " + CurrencyFormatter.formatAmount(importeMinimo) + "€";
         } else {
-            return String.format("Hasta %.2f€", importeMaximo);
+            return "Hasta " + CurrencyFormatter.formatAmount(importeMaximo) + "€";
         }
     }
 

@@ -1,6 +1,7 @@
 @import java.util.List
 @import java.time.format.DateTimeFormatter
 @import dev.jotxee.secretsanta.entity.Sorteo
+@import dev.jotxee.secretsanta.util.CurrencyFormatter
 @param List<Sorteo> sorteos
 @param String success = null
 @param String error = null
@@ -125,11 +126,11 @@
                     <span class="sorteo-price">
                       💰 
                       @if(sorteo.getImporteMinimo() != null && sorteo.getImporteMaximo() != null)
-                        ${sorteo.getImporteMinimo()}€ - ${sorteo.getImporteMaximo()}€
+                        ${CurrencyFormatter.formatAmount(sorteo.getImporteMinimo())}€ - ${CurrencyFormatter.formatAmount(sorteo.getImporteMaximo())}€
                       @elseif(sorteo.getImporteMinimo() != null)
-                        Desde ${sorteo.getImporteMinimo()}€
+                        Desde ${CurrencyFormatter.formatAmount(sorteo.getImporteMinimo())}€
                       @else
-                        Hasta ${sorteo.getImporteMaximo()}€
+                        Hasta ${CurrencyFormatter.formatAmount(sorteo.getImporteMaximo())}€
                       @endif
                     </span>
                   @endif
