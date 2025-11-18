@@ -2,7 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '4.0.0-SNAPSHOT'
 	id 'io.spring.dependency-management' version '1.1.7'
-	id 'gg.jte.gradle' version '3.1.16'
+	id("gg.jte.gradle") version "3.2.1"
 }
 
 group = 'dev.jotxee'
@@ -32,8 +32,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'gg.jte:jte-spring-boot-starter-3:3.1.16'
-	implementation 'gg.jte:jte-html:3.1.16'
+	implementation 'gg.jte:jte-spring-boot-starter-3:3.2.1'
+	implementation 'gg.jte:jte:3.2.1'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -61,6 +61,10 @@ tasks.named('bootJar') {
     from("jte-classes") {
         include("**/*.class")
     }
+}
+
+tasks.named('jar') {
+    enabled = false
 }
 
 tasks.named('test') {
