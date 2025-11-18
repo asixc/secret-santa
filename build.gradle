@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'dev.jotxee'
-version = '0.0.4'
+version = '0.0.5'
 description = 'A Secret Santa web application that lets users create raffles, randomly assign who gives a gift to whom, and automatically send a personalized email to each participant with their Secret Santa match.'
 
 java {
@@ -34,6 +34,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'gg.jte:jte-spring-boot-starter-3:3.2.1'
 	implementation 'gg.jte:jte:3.2.1'
+	// ✅ AÑADIDO: Incluir explícitamente jte-runtime para asegurar que HtmlTemplateOutput esté disponible
+	implementation 'gg.jte:jte-runtime:3.2.1'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -54,12 +56,14 @@ jte {
  * Muy importante:
  * - precompileJte genera las clases en el directorio por defecto "jte-classes"
  * - aquí las metemos dentro del bootJar, para que Spring/JTE pueda cargarlas en prod
+ * - Incluimos TODO el contenido (*.class, *.bin, etc.) y lo colocamos en BOOT-INF/classes
  */
 tasks.named('bootJar') {
     dependsOn tasks.precompileJte
 
     from("jte-classes") {
-        include("**/*.class")
+        include("**/*")
+        into("BOOT-INF/classes")
     }
 }
 
