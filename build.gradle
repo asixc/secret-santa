@@ -2,11 +2,11 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '4.0.0-SNAPSHOT'
 	id 'io.spring.dependency-management' version '1.1.7'
-	id("gg.jte.gradle") version "3.2.1"
+	id 'gg.jte.gradle' version '3.2.1'
 }
 
 group = 'dev.jotxee'
-version = '0.0.3'
+version = '0.0.4'
 description = 'A Secret Santa web application that lets users create raffles, randomly assign who gives a gift to whom, and automatically send a personalized email to each participant with their Secret Santa match.'
 
 java {
