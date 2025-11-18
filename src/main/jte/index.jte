@@ -1,4 +1,5 @@
 @import java.util.List
+@import dev.jotxee.secretsanta.util.CurrencyFormatter
 @param boolean hasToken
 @param List<String> names = null
 @param String assignedName = null
@@ -59,11 +60,11 @@
         <p class="sorteo-name">
           Presupuesto del regalo: 
           @if(importeMinimo != null && importeMaximo != null)
-            <strong>${importeMinimo}€ - ${importeMaximo}€</strong>
+            <strong>${CurrencyFormatter.formatAmount(importeMinimo)}€ - ${CurrencyFormatter.formatAmount(importeMaximo)}€</strong>
           @elseif(importeMinimo != null)
-            <strong>Desde ${importeMinimo}€</strong>
+            <strong>Desde ${CurrencyFormatter.formatAmount(importeMinimo)}€</strong>
           @else
-            <strong>Hasta ${importeMaximo}€</strong>
+            <strong>Hasta ${CurrencyFormatter.formatAmount(importeMaximo)}€</strong>
           @endif
         </p>
       @endif
