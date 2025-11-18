@@ -49,7 +49,9 @@ jte {
     // ⛔ Antes: generate()
     // ✅ Ahora: precompile() → genera las clases precompiladas
     precompile()
-    binaryStaticContent = true
+    // ⛔ DESACTIVADO: binaryStaticContent causa problemas con archivos .bin faltantes
+    // El contenido HTML se compila inline en las clases Java (funciona perfectamente en producción)
+    binaryStaticContent = false
 }
 
 /**
