@@ -29,7 +29,7 @@ WORKDIR /app
 
 ENV JAVA_OPTS=""
 
-COPY --from=build /app/build/libs/*-SNAPSHOT.jar /app/app.jar
+COPY --from=build /app/build/libs/*.jar /app/app.jar
 
 EXPOSE 8080
 
