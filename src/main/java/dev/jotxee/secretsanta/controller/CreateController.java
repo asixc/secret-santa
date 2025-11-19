@@ -59,7 +59,7 @@ public class CreateController {
 
             redirectAttributes.addFlashAttribute("success", 
                 "¡Sorteo creado exitosamente! Se han asignado los amigos invisibles a " + 
-                sorteo.getParticipantes().size() + " participantes.");
+                sorteo.getPerfiles().size() + " participantes.");
             
             return "redirect:/create";
 

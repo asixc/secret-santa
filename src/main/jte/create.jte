@@ -145,26 +145,26 @@
               </div>
               
               <div class="participants-list">
-                <h4>Participantes (${sorteo.getParticipantes().size()})</h4>
-                @for(var participante : sorteo.getParticipantes())
+                <h4>Participantes (${sorteo.getPerfiles().size()})</h4>
+                @for(var perfil : sorteo.getPerfiles())
                   <div class="participant-item">
                     <div class="participant-info">
-                      <span class="participant-name">👤 ${participante.getNombre()}</span>
-                      <span class="participant-email">📧 ${participante.getEmail()}</span>
-                      @if(participante.getAsignadoA() != null && !participante.getAsignadoA().isEmpty())
-                        <span class="participant-assigned">🎁 → ${participante.getAsignadoAEncrypted()}</span>
+                      <span class="participant-name">👤 ${perfil.getUsuario().getNombre()}</span>
+                      <span class="participant-email">📧 ${perfil.getUsuario().getEmail()}</span>
+                      @if(perfil.getAsignadoA() != null && !perfil.getAsignadoA().isEmpty())
+                        <span class="participant-assigned">🎁 → ${perfil.getAsignadoA()}</span>
                       @else
                         <span class="participant-assigned">🎁 → Sin asignar</span>
                       @endif
                     </div>
                     <div class="participant-actions">
-                      <button class="btn-edit" onclick="editEmail(${participante.getId()}, '${participante.getEmail()}')">
+                      <button class="btn-edit" onclick="editEmail(${perfil.getUsuario().getId()}, '${perfil.getUsuario().getEmail()}')">
                         ✏️ Editar Email
                       </button>
-                      <button class="btn-resend" onclick="resendEmail(${participante.getId()})">
+                      <button class="btn-resend" onclick="resendEmail(${perfil.getId()})">
                         📨 Reenviar
                       </button>
-                      <button class="btn-regenerate-pwd" onclick="regeneratePassword(${participante.getId()})">
+                      <button class="btn-regenerate-pwd" onclick="regeneratePassword(${perfil.getUsuario().getId()})">
                         🔑 Regenerar Contraseña
                       </button>
                     </div>
