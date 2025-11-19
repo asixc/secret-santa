@@ -1,48 +1,42 @@
 package dev.jotxee.secretsanta.config;
 
-import java.io.IOException;
-
 import dev.jotxee.secretsanta.security.ParticipanteUserDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Value("${ADMIN_USER:admin}")
+    private final ParticipanteUserDetailsService participanteUserDetailsService;
+    private final PasswordEncoder passwordEncoder;
+    private final CustomAuthEntryPoint customAuthEntryPoint;
+
+    @Value("${admin.user:admin}")
     private String adminUser;
 
-    @Value("${ADMIN_PASSWORD:adminpassword}")
+    @Value("${admin.password:adminpassword}")
     private String adminPassword;
-
-    @Autowired
-    private CustomAuthEntryPoint customAuthEntryPoint;
-
-    @Autowired
-    private ParticipanteUserDetailsService participanteUserDetailsService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @Bean
     public DaoAuthenticationProvider participanteAuthenticationProvider() {
@@ -52,32 +46,49 @@ public class SecurityConfig {
     }
 
     @Bean
+    public DaoAuthenticationProvider adminAuthenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(adminUserDetailsManager());
+        // No usa password encoder porque las contraseñas están en texto plano
+        provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance());
+        return provider;
+    }
+
+    @Bean
     public InMemoryUserDetailsManager adminUserDetailsManager() {
-        UserDetails admin = User.withUsername(adminUser)
-            .password("{noop}" + adminPassword)
+        // Validar que las credenciales no estén vacías y usar defaults si es necesario
+        String username = adminUser;
+        String password = adminPassword;
+        
+        if (username == null || username.trim().isEmpty()) {
+            log.warn("ADMIN_USER is null or empty. Using default 'admin'");
+            username = "admin";
+        }
+        if (password == null || password.trim().isEmpty()) {
+            log.warn("ADMIN_PASSWORD is null or empty. Using default 'adminpassword'");
+            password = "adminpassword";
+        }
+
+        UserDetails admin = User.withUsername(username)
+            .password(password)  // Sin {noop} porque usamos NoOpPasswordEncoder
             .roles("ADMIN")
             .build();
         return new InMemoryUserDetailsManager(admin);
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
-
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        // Prioridad 1: Usuarios participantes (con BCrypt)
-        auth.authenticationProvider(participanteAuthenticationProvider());
-        // Prioridad 2: Admin (noop - sin cifrado)
-        auth.userDetailsService(adminUserDetailsManager());
+    public AuthenticationManager authenticationManager() {
+        // Crear un AuthenticationManager con ambos providers
+        return new ProviderManager(List.of(
+            adminAuthenticationProvider(),
+            participanteAuthenticationProvider()
+        ));
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             // Autorizaciones
-            .authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(authz -> authz
                 .requestMatchers(
                     "/", "/login", "/error",
                     "/css/**", "/js/**", "/images/**", "/audio/**", "/favicon.ico"
@@ -110,7 +121,7 @@ public class SecurityConfig {
             // API devuelve 401; las vistas se redirigen al login por defecto
             .exceptionHandling(ex -> ex
                 .defaultAuthenticationEntryPointFor(
-                    apiAwareEntryPoint(),
+                    customAuthEntryPoint,
                     apiRequestMatcher()
                 )
             )
@@ -121,27 +132,17 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CustomAuthEntryPoint apiAwareEntryPoint() {
-        return customAuthEntryPoint;
-    }
-
-    @Bean
     public RequestMatcher apiRequestMatcher() {
         return request -> request.getRequestURI().startsWith("/api/");
     }
 
     @Bean
     public AuthenticationFailureHandler authenticationFailureHandler() {
-        return new AuthenticationFailureHandler() {
-            @Override
-            public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
-                                                org.springframework.security.core.AuthenticationException exception)
-                    throws IOException {
-                String username = request.getParameter("username");
-                String ip = request.getRemoteAddr();
-                log.warn("Intento fallido de login para usuario: {} desde IP: {}", username, ip);
-                response.sendRedirect("/login?error");
-            }
+        return (request, response, exception) -> {
+            String username = request.getParameter("username");
+            String ip = request.getRemoteAddr();
+            log.warn("Intento fallido de login para usuario: {} desde IP: {}", username, ip);
+            response.sendRedirect("/login?error");
         };
     }
 }

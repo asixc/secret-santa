@@ -60,19 +60,25 @@ public class ParticipanteService {
     /**
      * Obtiene todos los sorteos en los que participa un usuario
      */
+    @Transactional(readOnly = true)
     public List<Sorteo> obtenerSorteosDelParticipante(Long participanteId) {
-        Participante participante = participanteRepository.findById(participanteId)
+        Participante participante = participanteRepository.findByIdWithSorteo(participanteId)
             .orElseThrow(() -> new RuntimeException(PARTICIPANTE_NO_ENCONTRADO));
 
-        // Buscar todos los participantes con el mismo email
-        List<Participante> todasLasParticipaciones = participanteRepository.findAll().stream()
-            .filter(p -> p.getEmail().equals(participante.getEmail()))
-            .collect(Collectors.toList());
+        // Buscar todos los participantes con el mismo email (con su sorteo cargado)
+        List<Participante> todasLasParticipaciones = participanteRepository.findByEmailWithSorteo(participante.getEmail());
 
-        // Obtener los sorteos únicos
+        // Obtener los sorteos únicos por ID para evitar problemas con proxies
         return todasLasParticipaciones.stream()
             .map(Participante::getSorteo)
-            .distinct()
+            .filter(sorteo -> sorteo != null)
+            .collect(Collectors.toMap(
+                Sorteo::getId,
+                sorteo -> sorteo,
+                (existing, replacement) -> existing
+            ))
+            .values()
+            .stream()
             .collect(Collectors.toList());
     }
 
@@ -109,7 +115,7 @@ public class ParticipanteService {
     }
 
     public Participante obtenerPorId(Long id) {
-        return participanteRepository.findById(id)
+        return participanteRepository.findByIdWithSorteo(id)
             .orElseThrow(() -> new RuntimeException(PARTICIPANTE_NO_ENCONTRADO));
     }
 }
