@@ -68,18 +68,16 @@ public class ParticipanteService {
         // Buscar todos los participantes con el mismo email (con su sorteo cargado)
         List<Participante> todasLasParticipaciones = participanteRepository.findByEmailWithSorteo(participante.getEmail());
 
-        // Obtener los sorteos únicos por ID para evitar problemas con proxies
-        return todasLasParticipaciones.stream()
+        // Obtener los IDs únicos de sorteos
+        List<Long> sorteoIds = todasLasParticipaciones.stream()
             .map(Participante::getSorteo)
             .filter(sorteo -> sorteo != null)
-            .collect(Collectors.toMap(
-                Sorteo::getId,
-                sorteo -> sorteo,
-                (existing, replacement) -> existing
-            ))
-            .values()
-            .stream()
+            .map(Sorteo::getId)
+            .distinct()
             .collect(Collectors.toList());
+
+        // Cargar sorteos con sus participantes
+        return sorteoIds.isEmpty() ? List.of() : sorteoRepository.findByIdInWithParticipantes(sorteoIds);
     }
 
     /**

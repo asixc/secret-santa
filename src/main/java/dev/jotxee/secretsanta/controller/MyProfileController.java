@@ -24,7 +24,8 @@ public class MyProfileController {
 
     @GetMapping
     public String showMyProfile(@AuthenticationPrincipal ParticipanteUserDetails userDetails, Model model) {
-        Participante participante = userDetails.getParticipante();
+        // Recargar el participante desde BD para obtener datos actualizados
+        Participante participante = participanteService.obtenerPorId(userDetails.getParticipante().getId());
         List<Sorteo> sorteos = participanteService.obtenerSorteosDelParticipante(participante.getId());
 
         model.addAttribute("participante", participante);

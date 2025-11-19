@@ -16,10 +16,18 @@
   <title>Mi Perfil - Amigo Invisible</title>
   <link rel="stylesheet" href="/css/styles.css" />
   <style>
-    .profile-container {
-      max-width: 900px;
-      margin: 20px auto;
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      margin: 0;
       padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .profile-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
     }
 
     .profile-header {
@@ -180,9 +188,75 @@
       border-left: 4px solid #2196f3;
       margin-bottom: 20px;
     }
+
+    .sorteo-card {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #c31432;
+    }
+
+    .sorteo-card h3 {
+      margin: 0 0 10px 0;
+      color: #c31432;
+    }
+
+    .sorteo-card .fecha {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    .participantes-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .participante-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .participante-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .participante-card h4 {
+      margin: 0 0 8px 0;
+      color: #333;
+      font-size: 16px;
+    }
+
+    .participante-card .email {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .ver-perfil-btn {
+      display: inline-block;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #c31432 0%, #240b36 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 20px;
+      font-size: 13px;
+      transition: transform 0.2s;
+    }
+
+    .ver-perfil-btn:hover {
+      transform: scale(1.05);
+    }
   </style>
 </head>
-<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+<body>
   <div class="profile-container">
 
     <!-- Header del perfil -->
@@ -299,9 +373,30 @@
       @else
         !{var formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");}
         @for(var sorteo : sorteos)
-          <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
-            <h3 style="margin: 0; color: #c31432;">🎄 ${sorteo.getNombre()}</h3>
-            <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">Creado: ${sorteo.getFechaCreacion().format(formatter)}</p>
+          <div class="sorteo-card">
+            <h3>🎄 ${sorteo.getNombre()}</h3>
+            <div class="fecha">📅 Creado: ${sorteo.getFechaCreacion().format(formatter)}</div>
+            
+            <h4 style="margin-top: 20px; margin-bottom: 10px; color: #666;">👥 Participantes del sorteo:</h4>
+            <div class="participantes-list">
+              @for(var p : sorteo.getParticipantes())
+                <div class="participante-card">
+                  <h4>
+                    @if(p.getId().equals(participante.getId()))
+                      ${p.getNombre()} <span style="color: #c31432;">(Tú)</span>
+                    @else
+                      ${p.getNombre()}
+                    @endif
+                  </h4>
+                  <div class="email">${p.getEmail()}</div>
+                  @if(!p.getId().equals(participante.getId()))
+                    <a href="/my-profile/participante/${p.getId()}" class="ver-perfil-btn">
+                      👁️ Ver perfil
+                    </a>
+                  @endif
+                </div>
+              @endfor
+            </div>
           </div>
         @endfor
       @endif
