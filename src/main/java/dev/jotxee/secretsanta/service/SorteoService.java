@@ -9,6 +9,7 @@ import dev.jotxee.secretsanta.repository.SorteoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,9 @@ public class SorteoService {
     private final SorteoRepository sorteoRepository;
     private final ParticipanteRepository participanteRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final PasswordEncoder passwordEncoder;
+    private final PasswordGeneratorService passwordGeneratorService;
+    private final EmailService emailService;
     private final SecureRandom secureRandom = new SecureRandom();
 
     /**
@@ -92,7 +96,17 @@ public class SorteoService {
             participante.setEmail(dto.getEmail().trim());
             participante.setGenero(dto.getGenero());
             participante.setToken(UUID.randomUUID().toString());
+
+            // Generar contraseña automáticamente
+            String plainPassword = passwordGeneratorService.generatePassword();
+            participante.setPassword(passwordEncoder.encode(plainPassword));
+            participante.setRole("USER");
+
             participantes.add(participante);
+
+            // Enviar contraseña por email
+            emailService.enviarPassword(participante.getEmail(), participante.getNombre(), plainPassword);
+            log.info("Contraseña generada y enviada para: {}", participante.getNombre());
         });
 
         return participantes;

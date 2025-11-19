@@ -45,10 +45,36 @@ public class Participante {
     @Convert(converter = EmailEncryptConverter.class)
     private String asignadoA; // aquí se almacena el email cifrado del asignado
     
+    // Campos para autenticación
+    @Column
+    private String password; // BCrypt hash
+
+    @Column(nullable = false, length = 20)
+    private String role = "USER"; // USER o ADMIN
+
+    // Campos de tallas
+    @Column(length = 10)
+    private String tallaCamisa;
+
+    @Column(length = 10)
+    private String tallaPantalon;
+
+    @Column(length = 10)
+    private String tallaZapato;
+
+    @Column(length = 10)
+    private String tallaChaqueta;
+
+    @Column(length = 1000)
+    private String preferencias;
+
     @PrePersist
     protected void onCreate() {
         if (token == null) {
             token = UUID.randomUUID().toString();
+        }
+        if (role == null) {
+            role = "USER";
         }
     }
 

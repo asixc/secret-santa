@@ -3,6 +3,7 @@ package dev.jotxee.secretsanta.controller;
 import dev.jotxee.secretsanta.dto.SorteoFormDTO;
 import dev.jotxee.secretsanta.entity.Sorteo;
 import dev.jotxee.secretsanta.repository.SorteoRepository;
+import dev.jotxee.secretsanta.service.ParticipanteService;
 import dev.jotxee.secretsanta.service.SorteoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ public class CreateController {
 
     private final SorteoRepository sorteoRepository;
     private final SorteoService sorteoService;
+    private final ParticipanteService participanteService;
 
     @GetMapping("/create")
     public String showCreatePage(Model model) {
@@ -102,6 +104,28 @@ public class CreateController {
                 "Error al eliminar el sorteo: " + e.getMessage());
         }
         
+        return "redirect:/create";
+    }
+
+    /**
+     * Regenera la contraseña de un participante y la envía por email
+     */
+    @PostMapping("/participante/{id}/regenerar-password")
+    public String regenerarPassword(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            participanteService.regenerarYEnviarPassword(id);
+
+            log.info("Contraseña regenerada para participante con ID: {}", id);
+
+            redirectAttributes.addFlashAttribute("success",
+                "Contraseña regenerada y enviada por email correctamente");
+
+        } catch (Exception e) {
+            log.error("Error al regenerar contraseña para participante ID: {}", id, e);
+            redirectAttributes.addFlashAttribute("error",
+                "Error al regenerar la contraseña: " + e.getMessage());
+        }
+
         return "redirect:/create";
     }
 }

@@ -66,7 +66,7 @@ public class EmailService {
         try {
             ClassPathResource resource = new ClassPathResource("templates/email-template.html");
             return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        } catch (Exception e) {
+        } catch (Exception _) {
             log.warn("Template no encontrado, usando fallback");
             return buildFallbackTemplate();
         }
@@ -114,5 +114,73 @@ public class EmailService {
         return applicationBaseUrl.endsWith("/")
                 ? applicationBaseUrl + "?id=" + token
                 : applicationBaseUrl + "/?id=" + token;
+    }
+
+    @Async
+    public void enviarPassword(String email, String nombre, String password) {
+        log.info("📧 Enviando contraseña a {}", new EmailCryptoService(EmailEncryptConverter.staticKey).encrypt(email));
+
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setTo(email);
+            if (StringUtils.hasText(defaultSender)) {
+                helper.setFrom(defaultSender);
+            }
+            helper.setSubject("🔑 Tu contraseña para Amigo Invisible");
+
+            String htmlContent = loadPasswordEmailTemplate();
+            htmlContent = htmlContent.replace("{{PARTICIPANT_NAME}}", nombre);
+            htmlContent = htmlContent.replace("{{PASSWORD}}", password);
+            htmlContent = htmlContent.replace("{{LOGIN_URL}}", applicationBaseUrl.endsWith("/")
+                ? applicationBaseUrl + "login"
+                : applicationBaseUrl + "/login");
+
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
+            log.info("✅ Email de contraseña enviado exitosamente a {}",
+                new EmailCryptoService(EmailEncryptConverter.staticKey).encrypt(email));
+        } catch (Exception ex) {
+            log.error("❌ Error al enviar email de contraseña a {}",
+                new EmailCryptoService(EmailEncryptConverter.staticKey).encrypt(email), ex);
+        }
+    }
+
+    private String loadPasswordEmailTemplate() {
+        try {
+            ClassPathResource resource = new ClassPathResource("templates/email-password.html");
+            return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        } catch (Exception _) {
+            log.warn("Template de contraseña no encontrado, usando fallback");
+            return buildPasswordFallbackTemplate();
+        }
+    }
+
+    private String buildPasswordFallbackTemplate() {
+        return """
+                <!DOCTYPE html>
+                <html><head><meta charset="UTF-8"></head>
+                <body style="font-family: Arial; padding: 20px; background: #f4f4f4;">
+                    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px;">
+                        <h1 style="color: #c31432;">🔑 Tu Contraseña</h1>
+                        <p>¡Hola <strong>{{PARTICIPANT_NAME}}</strong>!</p>
+                        <p>Se ha generado una nueva contraseña para tu cuenta de Amigo Invisible.</p>
+                        <div style="background: #f0f0f0; padding: 20px; border-radius: 5px; margin: 20px 0; text-align: center;">
+                            <p style="margin: 0; font-size: 14px; color: #666;">Tu contraseña es:</p>
+                            <p style="margin: 10px 0 0 0; font-size: 24px; font-weight: bold; color: #c31432; font-family: monospace;">{{PASSWORD}}</p>
+                        </div>
+                        <p>Usa esta contraseña para acceder a tu perfil y ver tu información de tallas.</p>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="{{LOGIN_URL}}" style="background: #c31432; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px;">
+                                🔐 Iniciar Sesión
+                            </a>
+                        </div>
+                        <p style="color: #666; font-size: 12px;">Por seguridad, te recomendamos cambiar esta contraseña después de iniciar sesión.</p>
+                    </div>
+                </body>
+                </html>
+                """;
     }
 }

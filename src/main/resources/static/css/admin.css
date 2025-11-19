@@ -375,7 +375,7 @@ body {
   gap: 10px;
 }
 
-.btn-edit, .btn-resend {
+.btn-edit, .btn-resend, .btn-regenerate-pwd {
   padding: 8px 15px;
   border: none;
   border-radius: 5px;
@@ -404,6 +404,16 @@ body {
   background: #764ba2;
 }
 
+.btn-regenerate-pwd {
+  background: #27ae60;
+  color: white;
+}
+
+.btn-regenerate-pwd:hover {
+  transform: scale(1.05);
+  background: #229954;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .admin-header {
@@ -424,9 +434,11 @@ body {
   
   .participant-actions {
     width: 100%;
+    flex-wrap: wrap;
   }
   
-  .btn-edit, .btn-resend {
+  .btn-edit, .btn-resend, .btn-regenerate-pwd {
     flex: 1;
+    min-width: 120px;
   }
 }

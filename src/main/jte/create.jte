@@ -161,6 +161,9 @@
                       <button class="btn-resend" onclick="resendEmail(${participante.getId()})">
                         📨 Reenviar
                       </button>
+                      <button class="btn-regenerate-pwd" onclick="regeneratePassword(${participante.getId()})">
+                        🔑 Regenerar Contraseña
+                      </button>
                     </div>
                   </div>
                 @endfor
@@ -217,6 +220,17 @@
         fetch('/api/participante/' + participanteId + '/resend', {method: 'POST'})
         .then(response => response.ok ? alert('Email enviado!') : alert('Error al enviar'))
         .catch(() => alert('Error de conexión'));
+      }
+    }
+
+    function regeneratePassword(participanteId) {
+      if (confirm('¿Regenerar contraseña para este participante?\n\nSe generará una nueva contraseña y se enviará por email.')) {
+        // Crear formulario para POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/participante/' + participanteId + '/regenerar-password';
+        document.body.appendChild(form);
+        form.submit();
       }
     }
 

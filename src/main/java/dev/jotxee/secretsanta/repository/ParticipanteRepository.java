@@ -13,4 +13,8 @@ public interface ParticipanteRepository extends JpaRepository<Participante, Long
     Optional<Participante> findByToken(String token);
     
     List<Participante> findBySorteoId(Long sorteoId);
+
+    Optional<Participante> findByEmail(String email);
+
+    List<Participante> findBySorteoIdAndAsignadoA(Long sorteoId, String asignadoA);
 }
