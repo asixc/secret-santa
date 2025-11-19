@@ -2,9 +2,10 @@ package dev.jotxee.secretsanta.controller;
 
 import dev.jotxee.secretsanta.dto.SorteoFormDTO;
 import dev.jotxee.secretsanta.entity.Sorteo;
+import dev.jotxee.secretsanta.repository.PerfilSorteoRepository;
 import dev.jotxee.secretsanta.repository.SorteoRepository;
-import dev.jotxee.secretsanta.service.ParticipanteService;
 import dev.jotxee.secretsanta.service.SorteoService;
+import dev.jotxee.secretsanta.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -25,7 +26,8 @@ public class CreateController {
 
     private final SorteoRepository sorteoRepository;
     private final SorteoService sorteoService;
-    private final ParticipanteService participanteService;
+    private final PerfilSorteoRepository perfilSorteoRepository;
+    private final UsuarioService usuarioService;
 
     @GetMapping("/create")
     public String showCreatePage(Model model) {
@@ -108,20 +110,26 @@ public class CreateController {
     }
 
     /**
-     * Regenera la contraseña de un participante y la envía por email
+     * Regenera la contraseña de un USUARIO (no participante) y la envía por email.
+     * El ID que llega es el de PerfilSorteo.
      */
     @PostMapping("/participante/{id}/regenerar-password")
     public String regenerarPassword(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
-            participanteService.regenerarYEnviarPassword(id);
+            // El ID es de PerfilSorteo, necesitamos obtener el Usuario con FETCH JOIN
+            var perfil = perfilSorteoRepository.findByIdWithUsuario(id)
+                .orElseThrow(() -> new RuntimeException("Perfil no encontrado"));
+            
+            String email = perfil.getUsuario().getEmail();
+            usuarioService.regenerarYEnviarPassword(email);
 
-            log.info("Contraseña regenerada para participante con ID: {}", id);
+            log.info("Contraseña regenerada para usuario con email: {}", email);
 
             redirectAttributes.addFlashAttribute("success",
                 "Contraseña regenerada y enviada por email correctamente");
 
         } catch (Exception e) {
-            log.error("Error al regenerar contraseña para participante ID: {}", id, e);
+            log.error("Error al regenerar contraseña para perfil ID: {}", id, e);
             redirectAttributes.addFlashAttribute("error",
                 "Error al regenerar la contraseña: " + e.getMessage());
         }

@@ -19,6 +19,7 @@ public class Usuario {
     private Long id;
     
     @Column(unique = true, nullable = false)
+    @Convert(converter = EmailEncryptConverter.class)
     private String email;
     
     @Column(nullable = false)
@@ -29,7 +30,6 @@ public class Usuario {
     
     private String genero;
     
-    @Column(nullable = false)
     private String role = "USER";
     
     @Column(name = "fecha_creacion")

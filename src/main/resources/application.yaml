@@ -14,7 +14,7 @@ spring:
       connection-timeout: 30000
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     open-in-view: false
     properties:
       hibernate:
@@ -74,6 +74,8 @@ logging:
     "[dev.jotxee.secretsanta.event]": DEBUG
     "[dev.jotxee.secretsanta.service.EmailService]": DEBUG
     "[dev.jotxee.secretsanta.controller.CreateController]": DEBUG
+    "[org.flywaydb]": DEBUG
+    "[org.springframework.boot.autoconfigure.flyway]": DEBUG
 
 ---
 spring:
@@ -86,7 +88,7 @@ spring:
     password: ${POSTGRES_API_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: false
   flyway:
     enabled: true

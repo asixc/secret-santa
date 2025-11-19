@@ -26,6 +26,7 @@ public class PerfilSorteo {
     private String token;
     
     @Column(name = "asignado_a")
+    @Convert(converter = EmailEncryptConverter.class)
     private String asignadoA;
     
     @Column(name = "talla_camisa")
