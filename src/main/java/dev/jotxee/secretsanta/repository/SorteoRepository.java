@@ -11,9 +11,9 @@ import java.util.List;
 @Repository
 public interface SorteoRepository extends JpaRepository<Sorteo, Long> {
     
-    @Query("SELECT DISTINCT s FROM Sorteo s LEFT JOIN FETCH s.participantes WHERE s.activo = true")
+    @Query("SELECT DISTINCT s FROM Sorteo s LEFT JOIN FETCH s.perfiles p LEFT JOIN FETCH p.usuario WHERE s.activo = true")
     List<Sorteo> findByActivoTrue();
 
-    @Query("SELECT DISTINCT s FROM Sorteo s LEFT JOIN FETCH s.participantes WHERE s.id IN :ids")
-    List<Sorteo> findByIdInWithParticipantes(@Param("ids") List<Long> ids);
+    @Query("SELECT DISTINCT s FROM Sorteo s LEFT JOIN FETCH s.perfiles p LEFT JOIN FETCH p.usuario WHERE s.id IN :ids")
+    List<Sorteo> findByIdInWithPerfiles(@Param("ids") List<Long> ids);
 }
