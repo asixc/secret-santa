@@ -1,6 +1,6 @@
 package dev.jotxee.secretsanta.security;
 
-import dev.jotxee.secretsanta.repository.ParticipanteRepository;
+import dev.jotxee.secretsanta.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ParticipanteUserDetailsService implements UserDetailsService {
 
-    private final ParticipanteRepository participanteRepository;
+    private final UsuarioRepository usuarioRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return participanteRepository.findByEmail(email)
+        return usuarioRepository.findByEmail(email)
             .map(ParticipanteUserDetails::new)
             .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
     }

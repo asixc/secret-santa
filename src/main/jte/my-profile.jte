@@ -1,10 +1,13 @@
 @import java.util.List
 @import java.time.format.DateTimeFormatter
-@import dev.jotxee.secretsanta.entity.Participante
+@import dev.jotxee.secretsanta.entity.Usuario
+@import dev.jotxee.secretsanta.entity.PerfilSorteo
 @import dev.jotxee.secretsanta.entity.Sorteo
-@param Participante participante
+@param Usuario usuario
+@param List<PerfilSorteo> perfiles
 @param List<Sorteo> sorteos
-@param Participante viendoParticipante
+@param Usuario viendoUsuario
+@param List<PerfilSorteo> viendoPerfiles = null
 @param String success = null
 @param String error = null
 
@@ -25,7 +28,7 @@
     }
 
     .profile-container {
-      max-width: 1200px;
+      max-width: 1600px;
       margin: 0 auto;
       padding: 0 20px;
     }
@@ -181,12 +184,23 @@
       margin-left: 10px;
     }
 
-    .readonly-info {
-      background: #e3f2fd;
-      padding: 15px;
-      border-radius: 8px;
-      border-left: 4px solid #2196f3;
-      margin-bottom: 20px;
+    .back-to-profile-btn {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 25px;
+      background: rgba(255,255,255,0.9);
+      color: #c31432;
+      text-decoration: none;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .back-to-profile-btn:hover {
+      background: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
     .sorteo-card {
@@ -262,15 +276,19 @@
     <!-- Header del perfil -->
     <div class="profile-header">
       <h1>👤
-        @if(viendoParticipante.getId().equals(participante.getId()))
+        @if(viendoUsuario.getId().equals(usuario.getId()))
           Mi Perfil
         @else
-          Perfil de ${viendoParticipante.getNombre()}
+          Perfil de ${viendoUsuario.getNombre()}
           <span class="viewing-badge">📖 Modo Lectura</span>
         @endif
       </h1>
-      <div class="email">${participante.getEmail()}</div>
+      <div class="email">${usuario.getEmail()}</div>
       <a href="/logout" class="logout-btn">🚪 Cerrar Sesión</a>
+      
+      @if(!viendoUsuario.getId().equals(usuario.getId()))
+        <a href="/my-profile" class="back-to-profile-btn">↩️ Volver a mi perfil</a>
+      @endif
     </div>
 
     <!-- Mensajes -->
@@ -290,77 +308,108 @@
     <div class="section">
       <h2>📏 Información de Tallas</h2>
 
-      @if(!viendoParticipante.getId().equals(participante.getId()))
-        !{var vCamisa = viendoParticipante.getTallaCamisa() != null ? viendoParticipante.getTallaCamisa() : "No especificada";}
-        !{var vPantalon = viendoParticipante.getTallaPantalon() != null ? viendoParticipante.getTallaPantalon() : "No especificada";}
-        !{var vZapato = viendoParticipante.getTallaZapato() != null ? viendoParticipante.getTallaZapato() : "No especificada";}
-        !{var vChaqueta = viendoParticipante.getTallaChaqueta() != null ? viendoParticipante.getTallaChaqueta() : "No especificada";}
-        !{var vPreferencias = viendoParticipante.getPreferencias() != null ? viendoParticipante.getPreferencias() : "No hay preferencias especificadas";}
+      @if(!viendoUsuario.getId().equals(usuario.getId()))
+        !{var perfilesAMostrar = viendoPerfiles != null ? viendoPerfiles : perfiles;}
+        
+        @if(perfilesAMostrar.isEmpty())
+          <p style="text-align: center; padding: 20px; color: #999;">
+            Este usuario no tiene información de tallas todavía.
+          </p>
+        @else
+          @for(var perfil : perfilesAMostrar)
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="margin: 0 0 15px 0; color: #c31432;">
+                🎄 ${perfil.getSorteo().getNombre()}
+              </h3>
+              
+              !{var vCamisa = perfil.getTallaCamisa() != null ? perfil.getTallaCamisa() : "No especificada";}
+              !{var vPantalon = perfil.getTallaPantalon() != null ? perfil.getTallaPantalon() : "No especificada";}
+              !{var vZapato = perfil.getTallaZapato() != null ? perfil.getTallaZapato() : "No especificada";}
+              !{var vChaqueta = perfil.getTallaChaqueta() != null ? perfil.getTallaChaqueta() : "No especificada";}
+              !{var vPreferencias = perfil.getPreferencias() != null ? perfil.getPreferencias() : "No hay preferencias especificadas";}
 
-        <div class="readonly-info">
-          ℹ️ Estás viendo el perfil de <strong>${viendoParticipante.getNombre()}</strong>.
-          Esta información es de solo lectura.
-        </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>👕 Camisa</label>
+                  <input type="text" readonly value="${vCamisa}">
+                </div>
 
-        <div class="form-group">
-          <label>👕 Talla de Camisa</label>
-          <input type="text" readonly value="${vCamisa}">
-        </div>
+                <div class="form-group">
+                  <label>👖 Pantalón</label>
+                  <input type="text" readonly value="${vPantalon}">
+                </div>
 
-        <div class="form-group">
-          <label>👖 Talla de Pantalón</label>
-          <input type="text" readonly value="${vPantalon}">
-        </div>
+                <div class="form-group">
+                  <label>👟 Zapato</label>
+                  <input type="text" readonly value="${vZapato}">
+                </div>
 
-        <div class="form-group">
-          <label>👟 Talla de Zapato</label>
-          <input type="text" readonly value="${vZapato}">
-        </div>
+                <div class="form-group">
+                  <label>🧥 Chaqueta</label>
+                  <input type="text" readonly value="${vChaqueta}">
+                </div>
+              </div>
 
-        <div class="form-group">
-          <label>🧥 Talla de Chaqueta</label>
-          <input type="text" readonly value="${vChaqueta}">
-        </div>
-
-        <div class="form-group">
-          <label>💭 Preferencias</label>
-          <textarea readonly>${vPreferencias}</textarea>
-        </div>
+              <div class="form-group">
+                <label>💭 Preferencias</label>
+                <textarea readonly>${vPreferencias}</textarea>
+              </div>
+            </div>
+          @endfor
+        @endif
       @else
-        !{var valorCamisa = participante.getTallaCamisa() != null ? participante.getTallaCamisa() : "";}
-        !{var valorPantalon = participante.getTallaPantalon() != null ? participante.getTallaPantalon() : "";}
-        !{var valorZapato = participante.getTallaZapato() != null ? participante.getTallaZapato() : "";}
-        !{var valorChaqueta = participante.getTallaChaqueta() != null ? participante.getTallaChaqueta() : "";}
-        !{var valorPreferencias = participante.getPreferencias() != null ? participante.getPreferencias() : "";}
+        @if(perfiles.isEmpty())
+          <p style="text-align: center; padding: 20px; color: #999;">
+            📭 No estás participando en ningún sorteo todavía.
+          </p>
+        @else
+          @for(var perfil : perfiles)
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="margin: 0 0 15px 0; color: #c31432;">
+                🎄 ${perfil.getSorteo().getNombre()}
+              </h3>
 
-        <form action="/my-profile/actualizar-tallas" method="post">
-          <div class="form-group">
-            <label for="tallaCamisa">👕 Talla de Camisa</label>
-            <input type="text" id="tallaCamisa" name="tallaCamisa" value="${valorCamisa}" placeholder="Ej: M, L, XL">
-          </div>
+              !{var valorCamisa = perfil.getTallaCamisa() != null ? perfil.getTallaCamisa() : "";}
+              !{var valorPantalon = perfil.getTallaPantalon() != null ? perfil.getTallaPantalon() : "";}
+              !{var valorZapato = perfil.getTallaZapato() != null ? perfil.getTallaZapato() : "";}
+              !{var valorChaqueta = perfil.getTallaChaqueta() != null ? perfil.getTallaChaqueta() : "";}
+              !{var valorPreferencias = perfil.getPreferencias() != null ? perfil.getPreferencias() : "";}
 
-          <div class="form-group">
-            <label for="tallaPantalon">👖 Talla de Pantalón</label>
-            <input type="text" id="tallaPantalon" name="tallaPantalon" value="${valorPantalon}" placeholder="Ej: 42, 44">
-          </div>
+              <form action="/my-profile/actualizar-tallas" method="post">
+                <input type="hidden" name="perfilId" value="${perfil.getId()}">
+                
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="tallaCamisa_${perfil.getId()}">👕 Talla de Camisa</label>
+                    <input type="text" id="tallaCamisa_${perfil.getId()}" name="tallaCamisa" value="${valorCamisa}" placeholder="Ej: M, L, XL">
+                  </div>
 
-          <div class="form-group">
-            <label for="tallaZapato">👟 Talla de Zapato</label>
-            <input type="text" id="tallaZapato" name="tallaZapato" value="${valorZapato}" placeholder="Ej: 42, 38">
-          </div>
+                  <div class="form-group">
+                    <label for="tallaPantalon_${perfil.getId()}">👖 Talla de Pantalón</label>
+                    <input type="text" id="tallaPantalon_${perfil.getId()}" name="tallaPantalon" value="${valorPantalon}" placeholder="Ej: 42, 44">
+                  </div>
 
-          <div class="form-group">
-            <label for="tallaChaqueta">🧥 Talla de Chaqueta</label>
-            <input type="text" id="tallaChaqueta" name="tallaChaqueta" value="${valorChaqueta}" placeholder="Ej: M, L">
-          </div>
+                  <div class="form-group">
+                    <label for="tallaZapato_${perfil.getId()}">👟 Talla de Zapato</label>
+                    <input type="text" id="tallaZapato_${perfil.getId()}" name="tallaZapato" value="${valorZapato}" placeholder="Ej: 42, 38">
+                  </div>
 
-          <div class="form-group">
-            <label for="preferencias">💭 Preferencias y gustos</label>
-            <textarea id="preferencias" name="preferencias" placeholder="Cuéntanos tus gustos, hobbies, colores favoritos, etc.">${valorPreferencias}</textarea>
-          </div>
+                  <div class="form-group">
+                    <label for="tallaChaqueta_${perfil.getId()}">🧥 Talla de Chaqueta</label>
+                    <input type="text" id="tallaChaqueta_${perfil.getId()}" name="tallaChaqueta" value="${valorChaqueta}" placeholder="Ej: M, L">
+                  </div>
+                </div>
 
-          <button type="submit" class="btn-primary">💾 Guardar Cambios</button>
-        </form>
+                <div class="form-group">
+                  <label for="preferencias_${perfil.getId()}">💭 Preferencias y gustos</label>
+                  <textarea id="preferencias_${perfil.getId()}" name="preferencias" placeholder="Cuéntanos tus gustos, hobbies, colores favoritos, etc.">${valorPreferencias}</textarea>
+                </div>
+
+                <button type="submit" class="btn-primary">💾 Guardar Cambios</button>
+              </form>
+            </div>
+          @endfor
+        @endif
       @endif
     </div>
 
@@ -379,18 +428,18 @@
             
             <h4 style="margin-top: 20px; margin-bottom: 10px; color: #666;">👥 Participantes del sorteo:</h4>
             <div class="participantes-list">
-              @for(var p : sorteo.getParticipantes())
+              @for(var p : sorteo.getPerfiles())
                 <div class="participante-card">
                   <h4>
-                    @if(p.getId().equals(participante.getId()))
-                      ${p.getNombre()} <span style="color: #c31432;">(Tú)</span>
+                    @if(p.getUsuario().getId().equals(usuario.getId()))
+                      ${p.getUsuario().getNombre()} <span style="color: #c31432;">(Tú)</span>
                     @else
-                      ${p.getNombre()}
+                      ${p.getUsuario().getNombre()}
                     @endif
                   </h4>
-                  <div class="email">${p.getEmail()}</div>
-                  @if(!p.getId().equals(participante.getId()))
-                    <a href="/my-profile/participante/${p.getId()}" class="ver-perfil-btn">
+                  <div class="email">${p.getUsuario().getEmail()}</div>
+                  @if(!p.getUsuario().getId().equals(usuario.getId()))
+                    <a href="/my-profile/usuario/${p.getUsuario().getId()}" class="ver-perfil-btn">
                       👁️ Ver perfil
                     </a>
                   @endif

@@ -1,6 +1,6 @@
 package dev.jotxee.secretsanta.security;
 
-import dev.jotxee.secretsanta.entity.Participante;
+import dev.jotxee.secretsanta.entity.Usuario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,21 +12,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ParticipanteUserDetails implements UserDetails {
 
-    private final Participante participante;
+    private final Usuario usuario;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + participante.getRole()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRole()));
     }
 
     @Override
     public String getPassword() {
-        return participante.getPassword();
+        return usuario.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return participante.getEmail();
+        return usuario.getEmail();
     }
 
     @Override
@@ -50,11 +50,11 @@ public class ParticipanteUserDetails implements UserDetails {
     }
 
     public Long getId() {
-        return participante.getId();
+        return usuario.getId();
     }
 
-    public Participante getParticipante() {
-        return participante;
+    public Usuario getUsuario() {
+        return usuario;
     }
 }
 

@@ -18,7 +18,10 @@
   <div class="admin-container">
     <header class="admin-header">
       <h1>🎄 Panel de Administración - Secret Santa</h1>
-      <a href="/" class="btn-back">← Volver al inicio</a>
+      <div style="display: flex; gap: 10px;">
+        <a href="/" class="btn-back">← Volver al inicio</a>
+        <a href="/logout" class="btn-logout" style="background: #dc3545; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: 600;">🚪 Cerrar Sesión</a>
+      </div>
     </header>
 
     <main class="admin-content">

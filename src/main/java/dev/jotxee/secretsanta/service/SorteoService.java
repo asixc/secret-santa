@@ -1,11 +1,13 @@
 package dev.jotxee.secretsanta.service;
 
 import dev.jotxee.secretsanta.dto.SorteoFormDTO;
-import dev.jotxee.secretsanta.entity.Participante;
+import dev.jotxee.secretsanta.entity.PerfilSorteo;
 import dev.jotxee.secretsanta.entity.Sorteo;
+import dev.jotxee.secretsanta.entity.Usuario;
 import dev.jotxee.secretsanta.event.SorteoCreatedEvent;
-import dev.jotxee.secretsanta.repository.ParticipanteRepository;
+import dev.jotxee.secretsanta.repository.PerfilSorteoRepository;
 import dev.jotxee.secretsanta.repository.SorteoRepository;
+import dev.jotxee.secretsanta.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -15,10 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +25,8 @@ import java.util.UUID;
 public class SorteoService {
 
     private final SorteoRepository sorteoRepository;
-    private final ParticipanteRepository participanteRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PerfilSorteoRepository perfilSorteoRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final PasswordEncoder passwordEncoder;
     private final PasswordGeneratorService passwordGeneratorService;
@@ -48,24 +48,28 @@ public class SorteoService {
         // Validaciones
         validarSorteo(sorteoForm);
 
-        // Crear participantes en memoria
-        List<Participante> participantes = crearParticipantesDesdeFormulario(sorteoForm);
+        // Crear o recuperar usuarios, y crear perfiles de sorteo
+        Map<String, String> passwordsPorEmail = new HashMap<>();
+        List<PerfilSorteo> perfiles = crearPerfilesSorteoDesdeFormulario(sorteoForm, passwordsPorEmail);
 
         // Asignar amigos invisibles
-        asignarAmigosInvisibles(participantes);
-        log.info("Asignaciones calculadas correctamente para {} participantes", participantes.size());
+        asignarAmigosInvisibles(perfiles);
+        log.info("Asignaciones calculadas correctamente para {} perfiles", perfiles.size());
 
         // Guardar en base de datos
-        Sorteo sorteo = guardarSorteoConParticipantes(
+        Sorteo sorteo = guardarSorteoConPerfiles(
             sorteoForm.getNombre(), 
             sorteoForm.getNombreInterno(),
             sorteoForm.getImporteMinimo(),
             sorteoForm.getImporteMaximo(),
-            participantes
+            perfiles
         );
 
+        // Enviar emails con contraseñas (solo a nuevos usuarios)
+        enviarPasswordsANuevosUsuarios(perfiles, passwordsPorEmail);
+
         // Publicar evento
-        publicarEventoSorteoCreado(sorteo, participantes);
+        publicarEventoSorteoCreado(sorteo, perfiles);
 
         log.info("Sorteo creado exitosamente con ID: {}", sorteo.getId());
         return sorteo;
@@ -85,39 +89,53 @@ public class SorteoService {
     }
 
     /**
-     * Crea las entidades Participante desde el formulario.
+     * Crea los perfiles de sorteo desde el formulario.
+     * Si el usuario ya existe (por email), se reutiliza. Si no, se crea nuevo con contraseña.
      */
-    private List<Participante> crearParticipantesDesdeFormulario(SorteoFormDTO sorteoForm) {
-        List<Participante> participantes = new ArrayList<>();
+    private List<PerfilSorteo> crearPerfilesSorteoDesdeFormulario(SorteoFormDTO sorteoForm, Map<String, String> passwordsPorEmail) {
+        List<PerfilSorteo> perfiles = new ArrayList<>();
         
         sorteoForm.getParticipantes().forEach(dto -> {
-            Participante participante = new Participante();
-            participante.setNombre(dto.getNombre().trim());
-            participante.setEmail(dto.getEmail().trim());
-            participante.setGenero(dto.getGenero());
-            participante.setToken(UUID.randomUUID().toString());
+            String email = dto.getEmail().trim().toLowerCase();
+            
+            // Buscar o crear usuario
+            Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseGet(() -> {
+                    // Usuario nuevo - crear con contraseña
+                    String plainPassword = passwordGeneratorService.generatePassword();
+                    passwordsPorEmail.put(email, plainPassword); // Guardar para enviar por email después
+                    
+                    Usuario nuevoUsuario = new Usuario();
+                    nuevoUsuario.setEmail(email);
+                    nuevoUsuario.setNombre(dto.getNombre().trim());
+                    nuevoUsuario.setGenero(dto.getGenero());
+                    nuevoUsuario.setPassword(passwordEncoder.encode(plainPassword));
+                    nuevoUsuario.setRole("USER");
+                    nuevoUsuario.setFechaCreacion(LocalDateTime.now());
+                    
+                    Usuario saved = usuarioRepository.save(nuevoUsuario);
+                    log.info("Nuevo usuario creado: {} ({})", saved.getNombre(), saved.getEmail());
+                    return saved;
+                });
 
-            // Generar contraseña automáticamente
-            String plainPassword = passwordGeneratorService.generatePassword();
-            participante.setPassword(passwordEncoder.encode(plainPassword));
-            participante.setRole("USER");
-
-            participantes.add(participante);
-
-            // Enviar contraseña por email
-            emailService.enviarPassword(participante.getEmail(), participante.getNombre(), plainPassword);
-            log.info("Contraseña generada y enviada para: {}", participante.getNombre());
+            // Crear perfil de sorteo
+            PerfilSorteo perfil = new PerfilSorteo();
+            perfil.setUsuario(usuario);
+            perfil.setToken(UUID.randomUUID().toString());
+            // sorteo se asignará al guardar
+            
+            perfiles.add(perfil);
         });
 
-        return participantes;
+        return perfiles;
     }
 
     /**
      * Algoritmo para asignar amigos invisibles de forma aleatoria.
      * Garantiza que nadie se tenga a sí mismo.
      */
-    private void asignarAmigosInvisibles(List<Participante> participantes) {
-        int size = participantes.size();
+    private void asignarAmigosInvisibles(List<PerfilSorteo> perfiles) {
+        int size = perfiles.size();
         
         // Crear lista de índices para barajar
         List<Integer> indices = new ArrayList<>();
@@ -148,21 +166,21 @@ public class SorteoService {
             }
         } while (!asignacionValida);
 
-        // Asignar los emails cifrados según el orden barajado
+        // Asignar los emails según el orden barajado
         for (int i = 0; i < size; i++) {
             int asignadoIndex = indices.get(i);
-            participantes.get(i).setAsignadoA(participantes.get(asignadoIndex).getEmail());
+            perfiles.get(i).setAsignadoA(perfiles.get(asignadoIndex).getUsuario().getEmail());
         }
 
         log.debug("Asignaciones generadas en {} intentos", intentos);
     }
 
     /**
-     * Guarda el sorteo y sus participantes en la base de datos.
+     * Guarda el sorteo y sus perfiles en la base de datos.
      */
-    private Sorteo guardarSorteoConParticipantes(String nombreSorteo, String nombreInterno, 
-                                                   Double importeMinimo, Double importeMaximo,
-                                                   List<Participante> participantes) {
+    private Sorteo guardarSorteoConPerfiles(String nombreSorteo, String nombreInterno, 
+                                             Double importeMinimo, Double importeMaximo,
+                                             List<PerfilSorteo> perfiles) {
         // Crear y guardar el sorteo
         Sorteo sorteo = new Sorteo();
         sorteo.setNombre(nombreSorteo);
@@ -173,16 +191,32 @@ public class SorteoService {
         sorteo.setActivo(true);
         sorteo = sorteoRepository.save(sorteo);
 
-        // Asignar el sorteo a todos los participantes
-        for (Participante participante : participantes) {
-            participante.setSorteo(sorteo);
+        // Asignar el sorteo a todos los perfiles
+        for (PerfilSorteo perfil : perfiles) {
+            perfil.setSorteo(sorteo);
         }
 
-        // Guardar todos los participantes
-        participanteRepository.saveAll(participantes);
+        // Guardar todos los perfiles
+        perfilSorteoRepository.saveAll(perfiles);
         
-        log.debug("Sorteo y participantes guardados en base de datos");
+        log.debug("Sorteo y {} perfiles guardados en base de datos", perfiles.size());
         return sorteo;
+    }
+
+    /**
+     * Envía las contraseñas por email solo a los usuarios nuevos (que tienen entrada en el mapa).
+     */
+    private void enviarPasswordsANuevosUsuarios(List<PerfilSorteo> perfiles, Map<String, String> passwordsPorEmail) {
+        perfiles.forEach(perfil -> {
+            String email = perfil.getUsuario().getEmail();
+            if (passwordsPorEmail.containsKey(email)) {
+                String plainPassword = passwordsPorEmail.get(email);
+                emailService.enviarPassword(email, perfil.getUsuario().getNombre(), plainPassword);
+                log.info("Contraseña enviada a nuevo usuario: {}", perfil.getUsuario().getNombre());
+            } else {
+                log.debug("Usuario existente, no se envía contraseña: {}", perfil.getUsuario().getNombre());
+            }
+        });
     }
 
     /**
@@ -190,7 +224,7 @@ public class SorteoService {
      * Este evento se publica dentro de la transacción para que los listeners
      * transaccionales se ejecuten después del commit.
      */
-    private void publicarEventoSorteoCreado(Sorteo sorteo, List<Participante> participantes) {
+    private void publicarEventoSorteoCreado(Sorteo sorteo, List<PerfilSorteo> perfiles) {
         log.info("🚀 Publicando evento SorteoCreatedEvent para sorteo ID: {}", sorteo.getId());
         
         SorteoCreatedEvent evento = new SorteoCreatedEvent(
@@ -198,11 +232,11 @@ public class SorteoService {
             sorteo.getNombre(),
             sorteo.getImporteMinimo(),
             sorteo.getImporteMaximo(),
-            participantes.stream()
+            perfiles.stream()
                     .map(p -> new SorteoCreatedEvent.ParticipantPayload(
                             p.getId(),
-                            p.getNombre(),
-                            p.getEmail(),
+                            p.getUsuario().getNombre(),
+                            p.getUsuario().getEmail(),
                             p.getAsignadoA(),
                             p.getToken()
                     ))

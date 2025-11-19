@@ -1,9 +1,10 @@
 package dev.jotxee.secretsanta.controller;
 
-import dev.jotxee.secretsanta.entity.Participante;
+import dev.jotxee.secretsanta.entity.PerfilSorteo;
 import dev.jotxee.secretsanta.entity.Sorteo;
+import dev.jotxee.secretsanta.entity.Usuario;
 import dev.jotxee.secretsanta.security.ParticipanteUserDetails;
-import dev.jotxee.secretsanta.service.ParticipanteService;
+import dev.jotxee.secretsanta.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,46 +21,54 @@ import java.util.List;
 @Slf4j
 public class MyProfileController {
 
-    private final ParticipanteService participanteService;
+    private final UsuarioService usuarioService;
 
     @GetMapping
     public String showMyProfile(@AuthenticationPrincipal ParticipanteUserDetails userDetails, Model model) {
-        // Recargar el participante desde BD para obtener datos actualizados
-        Participante participante = participanteService.obtenerPorId(userDetails.getParticipante().getId());
-        List<Sorteo> sorteos = participanteService.obtenerSorteosDelParticipante(participante.getId());
+        // Obtener usuario y sus perfiles
+        Usuario usuario = usuarioService.obtenerPorEmail(userDetails.getUsername());
+        List<PerfilSorteo> perfiles = usuarioService.obtenerPerfilesDelUsuario(usuario.getId());
+        List<Sorteo> sorteos = usuarioService.obtenerSorteosDelUsuario(usuario.getId());
 
-        model.addAttribute("participante", participante);
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("perfiles", perfiles);
         model.addAttribute("sorteos", sorteos);
-        model.addAttribute("viendoParticipante", participante); // Por defecto vemos nuestro perfil
+        model.addAttribute("viendoUsuario", usuario); // Por defecto vemos nuestro perfil
 
         return "my-profile";
     }
 
-    @GetMapping("/participante/{id}")
-    public String verParticipante(
+    @GetMapping("/usuario/{id}")
+    public String verUsuario(
             @PathVariable Long id,
             @AuthenticationPrincipal ParticipanteUserDetails userDetails,
             Model model,
             RedirectAttributes redirectAttributes) {
 
         try {
-            Participante miParticipante = userDetails.getParticipante();
-            Participante participanteAVer = participanteService.obtenerPorId(id);
+            Usuario miUsuario = usuarioService.obtenerPorEmail(userDetails.getUsername());
+            Usuario usuarioAVer = usuarioService.obtenerPorId(id);
 
-            // Verificar que ambos están en el mismo sorteo
-            boolean compartenSorteo = participanteService.obtenerSorteosDelParticipante(miParticipante.getId())
-                .stream()
-                .anyMatch(sorteo -> participanteAVer.getSorteo().getId().equals(sorteo.getId()));
+            // Verificar que ambos comparten al menos un sorteo
+            List<Sorteo> misSorteos = usuarioService.obtenerSorteosDelUsuario(miUsuario.getId());
+            List<Sorteo> sussSorteos = usuarioService.obtenerSorteosDelUsuario(usuarioAVer.getId());
+
+            boolean compartenSorteo = misSorteos.stream()
+                .anyMatch(miSorteo -> sussSorteos.stream()
+                    .anyMatch(suSorteo -> suSorteo.getId().equals(miSorteo.getId())));
 
             if (!compartenSorteo) {
                 throw new SecurityException("No tienes permiso para ver este perfil");
             }
 
-            List<Sorteo> misSorteos = participanteService.obtenerSorteosDelParticipante(miParticipante.getId());
+            List<PerfilSorteo> misPerfiles = usuarioService.obtenerPerfilesDelUsuario(miUsuario.getId());
+            List<PerfilSorteo> susPerfiles = usuarioService.obtenerPerfilesDelUsuario(usuarioAVer.getId());
 
-            model.addAttribute("participante", miParticipante);
+            model.addAttribute("usuario", miUsuario);
+            model.addAttribute("perfiles", misPerfiles);
             model.addAttribute("sorteos", misSorteos);
-            model.addAttribute("viendoParticipante", participanteAVer);
+            model.addAttribute("viendoUsuario", usuarioAVer);
+            model.addAttribute("viendoPerfiles", susPerfiles);
 
             return "my-profile";
 
@@ -73,6 +82,7 @@ public class MyProfileController {
     @PostMapping("/actualizar-tallas")
     public String actualizarTallas(
             @AuthenticationPrincipal ParticipanteUserDetails userDetails,
+            @RequestParam Long perfilId,
             @RequestParam(required = false) String tallaCamisa,
             @RequestParam(required = false) String tallaPantalon,
             @RequestParam(required = false) String tallaZapato,
@@ -81,10 +91,16 @@ public class MyProfileController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            Participante participante = userDetails.getParticipante();
+            Usuario usuario = usuarioService.obtenerPorEmail(userDetails.getUsername());
+            PerfilSorteo perfil = usuarioService.obtenerPerfilPorId(perfilId);
 
-            participanteService.actualizarTallas(
-                participante.getId(),
+            // Verificar que el perfil pertenece al usuario autenticado
+            if (!perfil.getUsuario().getId().equals(usuario.getId())) {
+                throw new SecurityException("No puedes modificar este perfil");
+            }
+
+            usuarioService.actualizarTallas(
+                perfilId,
                 tallaCamisa,
                 tallaPantalon,
                 tallaZapato,
@@ -93,8 +109,11 @@ public class MyProfileController {
             );
 
             redirectAttributes.addFlashAttribute("success", "Tallas actualizadas correctamente");
-            log.info("Tallas actualizadas para participante: {}", participante.getId());
+            log.info("Tallas actualizadas para perfil: {} del usuario: {}", perfilId, usuario.getEmail());
 
+        } catch (SecurityException e) {
+            log.warn("Intento de modificación no autorizado: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "No tienes permiso para modificar este perfil");
         } catch (Exception e) {
             log.error("Error al actualizar tallas", e);
             redirectAttributes.addFlashAttribute("error", "Error al actualizar las tallas");
@@ -103,14 +122,23 @@ public class MyProfileController {
         return "redirect:/my-profile";
     }
 
-    @GetMapping("/sorteo/{sorteoId}/asignados")
+    @GetMapping("/sorteo/{sorteoId}/perfiles")
     @ResponseBody
-    public List<Participante> obtenerAsignados(
+    public List<PerfilSorteo> obtenerPerfilesSorteo(
             @PathVariable Long sorteoId,
             @AuthenticationPrincipal ParticipanteUserDetails userDetails) {
 
-        Participante participante = userDetails.getParticipante();
-        return participanteService.obtenerAsignadosEnSorteo(participante.getId(), sorteoId);
+        Usuario usuario = usuarioService.obtenerPorEmail(userDetails.getUsername());
+        
+        // Verificar que el usuario participa en este sorteo
+        List<Sorteo> misSorteos = usuarioService.obtenerSorteosDelUsuario(usuario.getId());
+        boolean participaEnSorteo = misSorteos.stream().anyMatch(s -> s.getId().equals(sorteoId));
+        
+        if (!participaEnSorteo) {
+            throw new SecurityException("No tienes permiso para ver este sorteo");
+        }
+
+        return usuarioService.obtenerPerfilesPorSorteo(sorteoId);
     }
 }
 

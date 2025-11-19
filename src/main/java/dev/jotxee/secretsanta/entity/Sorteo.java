@@ -41,6 +41,9 @@ public class Sorteo {
     @OneToMany(mappedBy = "sorteo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participante> participantes = new ArrayList<>();
     
+    @OneToMany(mappedBy = "sorteo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PerfilSorteo> perfiles = new ArrayList<>();
+    
     @PrePersist
     protected void onCreate() {
         fechaCreacion = LocalDateTime.now();
