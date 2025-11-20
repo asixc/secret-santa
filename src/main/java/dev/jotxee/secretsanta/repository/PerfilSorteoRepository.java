@@ -12,11 +12,14 @@ import java.util.Optional;
 @Repository
 public interface PerfilSorteoRepository extends JpaRepository<PerfilSorteo, Long> {
     
-    Optional<PerfilSorteo> findByToken(String token);
+    @Query("SELECT ps FROM PerfilSorteo ps JOIN FETCH ps.usuario JOIN FETCH ps.sorteo WHERE ps.token = :token")
+    Optional<PerfilSorteo> findByToken(@Param("token") String token);
     
-    List<PerfilSorteo> findBySorteoId(Long sorteoId);
+    @Query("SELECT ps FROM PerfilSorteo ps JOIN FETCH ps.usuario WHERE ps.sorteo.id = :sorteoId")
+    List<PerfilSorteo> findBySorteoId(@Param("sorteoId") Long sorteoId);
     
-    List<PerfilSorteo> findByUsuarioId(Long usuarioId);
+    @Query("SELECT ps FROM PerfilSorteo ps JOIN FETCH ps.usuario JOIN FETCH ps.sorteo WHERE ps.usuario.id = :usuarioId")
+    List<PerfilSorteo> findByUsuarioId(@Param("usuarioId") Long usuarioId);
     
     @Query("SELECT ps FROM PerfilSorteo ps JOIN FETCH ps.usuario JOIN FETCH ps.sorteo WHERE ps.usuario.id = :usuarioId")
     List<PerfilSorteo> findByUsuarioIdWithDetails(@Param("usuarioId") Long usuarioId);
@@ -24,9 +27,10 @@ public interface PerfilSorteoRepository extends JpaRepository<PerfilSorteo, Long
     @Query("SELECT ps FROM PerfilSorteo ps JOIN FETCH ps.usuario WHERE ps.sorteo.id = :sorteoId")
     List<PerfilSorteo> findBySorteoIdWithUsuario(@Param("sorteoId") Long sorteoId);
     
-    Optional<PerfilSorteo> findByUsuarioIdAndSorteoId(Long usuarioId, Long sorteoId);
+    @Query("SELECT ps FROM PerfilSorteo ps JOIN FETCH ps.usuario JOIN FETCH ps.sorteo WHERE ps.usuario.id = :usuarioId AND ps.sorteo.id = :sorteoId")
+    Optional<PerfilSorteo> findByUsuarioIdAndSorteoId(@Param("usuarioId") Long usuarioId, @Param("sorteoId") Long sorteoId);
     
-    @Query("SELECT ps FROM PerfilSorteo ps WHERE ps.sorteo.id = :sorteoId AND ps.asignadoA = :email")
+    @Query("SELECT ps FROM PerfilSorteo ps JOIN FETCH ps.usuario WHERE ps.sorteo.id = :sorteoId AND ps.asignadoA = :email")
     List<PerfilSorteo> findBySorteoIdAndAsignadoA(@Param("sorteoId") Long sorteoId, @Param("email") String email);
     
     @Query("SELECT ps FROM PerfilSorteo ps JOIN FETCH ps.usuario WHERE ps.id = :id")
