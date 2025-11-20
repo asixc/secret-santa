@@ -20,11 +20,14 @@
   <link rel="stylesheet" href="/css/styles.css" />
   <style>
     body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
       min-height: 100vh;
       margin: 0;
       padding: 20px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      display: block !important;
     }
 
     .profile-container {
@@ -414,42 +417,44 @@
     </div>
 
     <!-- Mis sorteos -->
-    <div class="section">
-      <h2>🎁 Mis Sorteos</h2>
+    @if(viendoUsuario.getId().equals(usuario.getId()))
+      <div class="section">
+        <h2>🎁 Mis Sorteos</h2>
 
-      @if(sorteos.isEmpty())
-        <p style="text-align: center; padding: 40px; color: #999;">📭 No estás participando en ningún sorteo todavía.</p>
-      @else
-        !{var formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");}
-        @for(var sorteo : sorteos)
-          <div class="sorteo-card">
-            <h3>🎄 ${sorteo.getNombre()}</h3>
-            <div class="fecha">📅 Creado: ${sorteo.getFechaCreacion().format(formatter)}</div>
-            
-            <h4 style="margin-top: 20px; margin-bottom: 10px; color: #666;">👥 Participantes del sorteo:</h4>
-            <div class="participantes-list">
-              @for(var p : sorteo.getPerfiles())
-                <div class="participante-card">
-                  <h4>
-                    @if(p.getUsuario().getId().equals(usuario.getId()))
-                      ${p.getUsuario().getNombre()} <span style="color: #c31432;">(Tú)</span>
-                    @else
-                      ${p.getUsuario().getNombre()}
+        @if(sorteos.isEmpty())
+          <p style="text-align: center; padding: 40px; color: #999;">📭 No estás participando en ningún sorteo todavía.</p>
+        @else
+          !{var formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");}
+          @for(var sorteo : sorteos)
+            <div class="sorteo-card">
+              <h3>🎄 ${sorteo.getNombre()}</h3>
+              <div class="fecha">📅 Creado: ${sorteo.getFechaCreacion().format(formatter)}</div>
+              
+              <h4 style="margin-top: 20px; margin-bottom: 10px; color: #666;">👥 Participantes del sorteo:</h4>
+              <div class="participantes-list">
+                @for(var p : sorteo.getPerfiles())
+                  <div class="participante-card">
+                    <h4>
+                      @if(p.getUsuario().getId().equals(usuario.getId()))
+                        ${p.getUsuario().getNombre()} <span style="color: #c31432;">(Tú)</span>
+                      @else
+                        ${p.getUsuario().getNombre()}
+                      @endif
+                    </h4>
+                    <div class="email">${p.getUsuario().getEmail()}</div>
+                    @if(!p.getUsuario().getId().equals(usuario.getId()))
+                      <a href="/my-profile/usuario/${p.getUsuario().getId()}" class="ver-perfil-btn">
+                        👁️ Ver perfil
+                      </a>
                     @endif
-                  </h4>
-                  <div class="email">${p.getUsuario().getEmail()}</div>
-                  @if(!p.getUsuario().getId().equals(usuario.getId()))
-                    <a href="/my-profile/usuario/${p.getUsuario().getId()}" class="ver-perfil-btn">
-                      👁️ Ver perfil
-                    </a>
-                  @endif
-                </div>
-              @endfor
+                  </div>
+                @endfor
+              </div>
             </div>
-          </div>
-        @endfor
-      @endif
-    </div>
+          @endfor
+        @endif
+      </div>
+    @endif
 
   </div>
 </body>
