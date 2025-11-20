@@ -174,7 +174,7 @@
                       <button class="btn-resend" onclick="resendEmail(${perfil.getId()})">
                         📨 Reenviar
                       </button>
-                      <button class="btn-regenerate-pwd" onclick="regeneratePassword(${perfil.getUsuario().getId()})">
+                      <button class="btn-regenerate-pwd" onclick="regeneratePassword(${perfil.getId()})">
                         🔑 Regenerar Contraseña
                       </button>
                     </div>
