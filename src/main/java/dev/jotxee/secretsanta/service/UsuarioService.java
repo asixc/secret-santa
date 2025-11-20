@@ -120,8 +120,8 @@ public class UsuarioService {
             .distinct()
             .collect(Collectors.toList());
 
-        // Cargar sorteos con sus perfiles (ya están cargados en perfiles, pero para consistencia)
-        return sorteoIds.isEmpty() ? List.of() : sorteoRepository.findAllById(sorteoIds);
+        // Cargar sorteos con sus perfiles eagerly para evitar LazyInitializationException
+        return sorteoIds.isEmpty() ? List.of() : sorteoRepository.findByIdInWithPerfiles(sorteoIds);
     }
 
     /**

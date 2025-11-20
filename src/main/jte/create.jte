@@ -152,7 +152,17 @@
                       <span class="participant-name">👤 ${perfil.getUsuario().getNombre()}</span>
                       <span class="participant-email">📧 ${perfil.getUsuario().getEmail()}</span>
                       @if(perfil.getAsignadoA() != null && !perfil.getAsignadoA().isEmpty())
-                        <span class="participant-assigned">🎁 → ${perfil.getAsignadoA()}</span>
+                        !{
+                          var nombreAsignado = "?";
+                          var emailAsignado = perfil.getAsignadoA();
+                          for (var p : sorteo.getPerfiles()) {
+                            if (p.getUsuario().getEmail().equals(emailAsignado)) {
+                              nombreAsignado = p.getUsuario().getNombre();
+                              break;
+                            }
+                          }
+                        }
+                        <span class="participant-assigned">🎁 → ${nombreAsignado}</span>
                       @else
                         <span class="participant-assigned">🎁 → Sin asignar</span>
                       @endif
