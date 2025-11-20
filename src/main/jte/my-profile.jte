@@ -185,6 +185,7 @@
       font-size: 12px;
       font-weight: 600;
       margin-left: 10px;
+      vertical-align: middle;
     }
 
     .back-to-profile-btn {
@@ -286,7 +287,9 @@
           <span class="viewing-badge">📖 Modo Lectura</span>
         @endif
       </h1>
-      <div class="email">${usuario.getEmail()}</div>
+      @if(viendoUsuario.getId().equals(usuario.getId()))
+        <div class="email">${usuario.getEmail()}</div>
+      @endif
       <a href="/logout" class="logout-btn">🚪 Cerrar Sesión</a>
       
       @if(!viendoUsuario.getId().equals(usuario.getId()))
