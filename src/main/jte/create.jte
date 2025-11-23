@@ -1,7 +1,9 @@
 @import java.util.List
 @import java.time.format.DateTimeFormatter
+@import dev.jotxee.secretsanta.entity.EmailEncryptConverter
 @import dev.jotxee.secretsanta.entity.Sorteo
 @import dev.jotxee.secretsanta.util.CurrencyFormatter
+@import dev.jotxee.secretsanta.util.EmailCryptoService
 @param List<Sorteo> sorteos
 @param String success = null
 @param String error = null
@@ -18,7 +20,10 @@
   <div class="admin-container">
     <header class="admin-header">
       <h1>🎄 Panel de Administración - Secret Santa</h1>
-      <a href="/" class="btn-back">← Volver al inicio</a>
+      <div style="display: flex; gap: 10px;">
+        <a href="/" class="btn-back">← Volver al inicio</a>
+        <a href="/logout" class="btn-logout" style="background: #dc3545; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: 600;">🚪 Cerrar Sesión</a>
+      </div>
     </header>
 
     <main class="admin-content">
@@ -142,24 +147,30 @@
               </div>
               
               <div class="participants-list">
-                <h4>Participantes (${sorteo.getParticipantes().size()})</h4>
-                @for(var participante : sorteo.getParticipantes())
+                <h4>Participantes (${sorteo.getPerfiles().size()})</h4>
+                @for(var perfil : sorteo.getPerfiles())
                   <div class="participant-item">
                     <div class="participant-info">
-                      <span class="participant-name">👤 ${participante.getNombre()}</span>
-                      <span class="participant-email">📧 ${participante.getEmail()}</span>
-                      @if(participante.getAsignadoA() != null && !participante.getAsignadoA().isEmpty())
-                        <span class="participant-assigned">🎁 → ${participante.getAsignadoAEncrypted()}</span>
+                      <span class="participant-name">👤 ${perfil.getUsuario().getNombre()}</span>
+                      <span class="participant-email">📧 ${perfil.getUsuario().getEmail()}</span>
+                      @if(perfil.getAsignadoA() != null && !perfil.getAsignadoA().isEmpty())
+                        <details class="assignment-details">
+                          <summary class="assignment-summary">🎁 Ver asignación</summary>
+                          <span class="participant-assigned">${new EmailCryptoService(EmailEncryptConverter.staticKey).encrypt(perfil.getAsignadoA())}</span>
+                        </details>
                       @else
                         <span class="participant-assigned">🎁 → Sin asignar</span>
                       @endif
                     </div>
                     <div class="participant-actions">
-                      <button class="btn-edit" onclick="editEmail(${participante.getId()}, '${participante.getEmail()}')">
+                      <button class="btn-edit" onclick="editEmail(${perfil.getUsuario().getId()}, '${perfil.getUsuario().getEmail()}')">
                         ✏️ Editar Email
                       </button>
-                      <button class="btn-resend" onclick="resendEmail(${participante.getId()})">
+                      <button class="btn-resend" onclick="resendEmail(${perfil.getId()})">
                         📨 Reenviar
+                      </button>
+                      <button class="btn-regenerate-pwd" onclick="regeneratePassword(${perfil.getId()})">
+                        🔑 Regenerar Contraseña
                       </button>
                     </div>
                   </div>
@@ -217,6 +228,17 @@
         fetch('/api/participante/' + participanteId + '/resend', {method: 'POST'})
         .then(response => response.ok ? alert('Email enviado!') : alert('Error al enviar'))
         .catch(() => alert('Error de conexión'));
+      }
+    }
+
+    function regeneratePassword(participanteId) {
+      if (confirm('¿Regenerar contraseña para este participante?\n\nSe generará una nueva contraseña y se enviará por email.')) {
+        // Crear formulario para POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/participante/' + participanteId + '/regenerar-password';
+        document.body.appendChild(form);
+        form.submit();
       }
     }
 

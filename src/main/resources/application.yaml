@@ -14,11 +14,17 @@ spring:
       connection-timeout: 30000
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     open-in-view: false
     properties:
       hibernate:
     #    format_sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 1
+    locations: classpath:db/migration
+    validate-on-migrate: true
   mvc:
     hiddenmethod:
       filter:
@@ -68,6 +74,8 @@ logging:
     "[dev.jotxee.secretsanta.event]": DEBUG
     "[dev.jotxee.secretsanta.service.EmailService]": DEBUG
     "[dev.jotxee.secretsanta.controller.CreateController]": DEBUG
+    "[org.flywaydb]": DEBUG
+    "[org.springframework.boot.autoconfigure.flyway]": DEBUG
 
 ---
 spring:
@@ -80,8 +88,14 @@ spring:
     password: ${POSTGRES_API_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: update   # en vez de validate
+      ddl-auto: none
     show-sql: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 1
+    locations: classpath:db/migration
+    validate-on-migrate: true
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT:587}

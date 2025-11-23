@@ -32,6 +32,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.flywaydb:flyway-core'
+	implementation 'org.flywaydb:flyway-database-postgresql'
 	implementation 'gg.jte:jte-spring-boot-starter-3:3.2.1'
 	implementation 'gg.jte:jte:3.2.1'
 	// ✅ AÑADIDO: Incluir explícitamente jte-runtime para asegurar que HtmlTemplateOutput esté disponible

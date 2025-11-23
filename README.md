@@ -139,4 +139,9 @@ docker-compose logs postgres
 
 ---
 
+## 👨🏻‍💻 Arranque en local
+```bash
+MAIL_HOST=smtp.servidor-correo.net MAIL_PORT=587 MAIL_USERNAME=$MAIL_USERNAME MAIL_PASSWORD=$MAIL_PASSWORD MAIL_FROM=$MAIL_FROM ADMIN_USER=$ADMIN_USER ADMIN_PASSWORD=$ADMIN_PASSWORD ./gradlew bootRun
+```
+
 **Desarrollado con ❤️ por Miriam & Jotxee** 🎅🎄

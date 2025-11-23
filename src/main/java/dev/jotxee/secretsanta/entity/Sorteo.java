@@ -39,7 +39,7 @@ public class Sorteo {
     private Boolean activo = true;
     
     @OneToMany(mappedBy = "sorteo", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Participante> participantes = new ArrayList<>();
+    private List<PerfilSorteo> perfiles = new ArrayList<>();
     
     @PrePersist
     protected void onCreate() {
