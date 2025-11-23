@@ -93,7 +93,12 @@ public class UsuarioService {
      */
     @Transactional(readOnly = true)
     public List<PerfilSorteo> obtenerPerfilesDelUsuario(Long usuarioId) {
-        return perfilSorteoRepository.findByUsuarioIdWithDetails(usuarioId);
+        List<PerfilSorteo> perfiles = perfilSorteoRepository.findByUsuarioIdWithDetails(usuarioId);
+        
+        // Ordenar por fecha de creación del sorteo descendente (más reciente primero)
+        perfiles.sort((p1, p2) -> p2.getSorteo().getFechaCreacion().compareTo(p1.getSorteo().getFechaCreacion()));
+        
+        return perfiles;
     }
 
     /**
@@ -102,7 +107,12 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public List<PerfilSorteo> obtenerPerfilesDelUsuarioPorEmail(String email) {
         Usuario usuario = obtenerPorEmail(email);
-        return perfilSorteoRepository.findByUsuarioIdWithDetails(usuario.getId());
+        List<PerfilSorteo> perfiles = perfilSorteoRepository.findByUsuarioIdWithDetails(usuario.getId());
+        
+        // Ordenar por fecha de creación del sorteo descendente (más reciente primero)
+        perfiles.sort((p1, p2) -> p2.getSorteo().getFechaCreacion().compareTo(p1.getSorteo().getFechaCreacion()));
+        
+        return perfiles;
     }
 
     /**
@@ -121,7 +131,12 @@ public class UsuarioService {
             .collect(Collectors.toList());
 
         // Cargar sorteos con sus perfiles eagerly para evitar LazyInitializationException
-        return sorteoIds.isEmpty() ? List.of() : sorteoRepository.findByIdInWithPerfiles(sorteoIds);
+        List<Sorteo> sorteos = sorteoIds.isEmpty() ? List.of() : sorteoRepository.findByIdInWithPerfiles(sorteoIds);
+        
+        // Ordenar por fecha de creación descendente (más reciente primero)
+        sorteos.sort((s1, s2) -> s2.getFechaCreacion().compareTo(s1.getFechaCreacion()));
+        
+        return sorteos;
     }
 
     /**
