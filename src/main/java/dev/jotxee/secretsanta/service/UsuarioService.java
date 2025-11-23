@@ -146,4 +146,18 @@ public class UsuarioService {
     public List<PerfilSorteo> obtenerPerfilesPorSorteo(Long sorteoId) {
         return perfilSorteoRepository.findBySorteoIdWithUsuario(sorteoId);
     }
+    
+    /**
+     * Obtiene los sorteos compartidos entre dos usuarios de forma optimizada.
+     * Usa una única consulta SQL en lugar de múltiples consultas y filtrado en memoria.
+     */
+    @Transactional(readOnly = true)
+    public List<Sorteo> obtenerSorteosCompartidos(Long usuario1Id, Long usuario2Id) {
+        List<Sorteo> sorteos = sorteoRepository.findSharedSorteos(usuario1Id, usuario2Id);
+        
+        // Ordenar por fecha de creación descendente (más reciente primero)
+        sorteos.sort((s1, s2) -> s2.getFechaCreacion().compareTo(s1.getFechaCreacion()));
+        
+        return sorteos;
+    }
 }

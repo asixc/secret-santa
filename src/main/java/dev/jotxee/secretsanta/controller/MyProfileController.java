@@ -49,20 +49,20 @@ public class MyProfileController {
             Usuario miUsuario = usuarioService.obtenerPorEmail(userDetails.getUsername());
             Usuario usuarioAVer = usuarioService.obtenerPorId(id);
 
-            // Verificar que ambos comparten al menos un sorteo
-            List<Sorteo> misSorteos = usuarioService.obtenerSorteosDelUsuario(miUsuario.getId());
-            List<Sorteo> sussSorteos = usuarioService.obtenerSorteosDelUsuario(usuarioAVer.getId());
+            // OPTIMIZACIÓN: Consulta directa de sorteos compartidos en lugar de múltiples consultas
+            List<Sorteo> sorteosCompartidos = usuarioService.obtenerSorteosCompartidos(
+                miUsuario.getId(), 
+                usuarioAVer.getId()
+            );
 
-            // Obtener los IDs de los sorteos compartidos
-            List<Long> sorteosCompartidosIds = misSorteos.stream()
-                .filter(miSorteo -> sussSorteos.stream()
-                    .anyMatch(suSorteo -> suSorteo.getId().equals(miSorteo.getId())))
-                .map(Sorteo::getId)
-                .toList();
-
-            if (sorteosCompartidosIds.isEmpty()) {
+            if (sorteosCompartidos.isEmpty()) {
                 throw new SecurityException("No tienes permiso para ver este perfil");
             }
+
+            // Obtener los IDs de los sorteos compartidos para filtrar perfiles
+            List<Long> sorteosCompartidosIds = sorteosCompartidos.stream()
+                .map(Sorteo::getId)
+                .toList();
 
             List<PerfilSorteo> misPerfiles = usuarioService.obtenerPerfilesDelUsuario(miUsuario.getId());
             List<PerfilSorteo> todosLosPerfilesDelUsuarioAVer = usuarioService.obtenerPerfilesDelUsuario(usuarioAVer.getId());
@@ -71,6 +71,9 @@ public class MyProfileController {
             List<PerfilSorteo> perfilesCompartidos = todosLosPerfilesDelUsuarioAVer.stream()
                 .filter(perfil -> sorteosCompartidosIds.contains(perfil.getSorteo().getId()))
                 .toList();
+
+            // Usar los sorteos del usuario actual para el menú
+            List<Sorteo> misSorteos = usuarioService.obtenerSorteosDelUsuario(miUsuario.getId());
 
             model.addAttribute("usuario", miUsuario);
             model.addAttribute("perfiles", misPerfiles);
