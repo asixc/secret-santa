@@ -27,6 +27,11 @@ app:
   base-url: http://localhost:8080
   email-crypto-key: test-key
 
+admin:
+  user: admin
+  # Hash BCrypt de "test-admin-password" para testing
+  password: $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+
 logging:
   level:
     root: WARN
