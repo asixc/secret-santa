@@ -31,11 +31,11 @@ CREATE TABLE IF NOT EXISTS perfil_sorteo (
 
 -- 3. Migrar datos de participantes a usuarios y perfil_sorteo
 -- Paso 3a: Insertar usuarios únicos (agrupa por email)
--- NOTA: Password se genera al enviar email, aquí placeholder inválido
+-- NOTA: Password se genera al enviar email, aquí hash BCrypt inválido como placeholder
 INSERT INTO usuarios (email, password, nombre, genero, role, fecha_creacion)
 SELECT DISTINCT ON (email) 
     email,
-    'NOT_SET_YET',  -- Placeholder: se genera al regenerar password
+    '$2b$12$invalidinvalidinvalidinvalidinv',  -- Placeholder: hash inválido, se genera al regenerar password
     nombre,
     genero,
     'USER',
