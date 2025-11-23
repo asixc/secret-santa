@@ -10,11 +10,7 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -32,10 +28,10 @@ public class SecurityConfig {
     private final PasswordEncoder passwordEncoder;
     private final CustomAuthEntryPoint customAuthEntryPoint;
 
-    @Value("${admin.user:admin}")
-    private String adminUser;
+    @Value("${admin.username:admin}")
+    private String adminUsername;
 
-    @Value("${admin.password:adminpassword}")
+    @Value("${admin.password:admin123}")
     private String adminPassword;
 
     @Bean
@@ -46,40 +42,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider adminAuthenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(adminUserDetailsManager());
-        // No usa password encoder porque las contraseñas están en texto plano
-        provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance());
-        return provider;
-    }
-
-    @Bean
-    public InMemoryUserDetailsManager adminUserDetailsManager() {
-        // Validar que las credenciales no estén vacías y usar defaults si es necesario
-        String username = adminUser;
-        String password = adminPassword;
-        
-        if (username == null || username.trim().isEmpty()) {
-            log.warn("ADMIN_USER is null or empty. Using default 'admin'");
-            username = "admin";
-        }
-        if (password == null || password.trim().isEmpty()) {
-            log.warn("ADMIN_PASSWORD is null or empty. Using default 'adminpassword'");
-            password = "adminpassword";
-        }
-
-        UserDetails admin = User.withUsername(username)
-            .password(password)  // Sin {noop} porque usamos NoOpPasswordEncoder
-            .roles("ADMIN")
-            .build();
-        return new InMemoryUserDetailsManager(admin);
-    }
-
-    @Bean
     public AuthenticationManager authenticationManager() {
-        // Crear un AuthenticationManager con ambos providers
+        // AuthenticationManager con un único provider que gestiona tanto admins como users desde BD
         return new ProviderManager(List.of(
-            adminAuthenticationProvider(),
             participanteAuthenticationProvider()
         ));
     }
