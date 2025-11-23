@@ -91,15 +91,32 @@ public class SorteoService {
     /**
      * Crea los perfiles de sorteo desde el formulario.
      * Si el usuario ya existe (por email), se reutiliza. Si no, se crea nuevo con contraseña.
+     * Si el usuario existe pero tiene el password placeholder de migración, se regenera y envía.
      */
     private List<PerfilSorteo> crearPerfilesSorteoDesdeFormulario(SorteoFormDTO sorteoForm, Map<String, String> passwordsPorEmail) {
         List<PerfilSorteo> perfiles = new ArrayList<>();
+        final String MIGRATION_PLACEHOLDER = "$2b$12$invalidinvalidinvalidinvalidinv";
         
         sorteoForm.getParticipantes().forEach(dto -> {
             String email = dto.getEmail().trim().toLowerCase();
             
             // Buscar o crear usuario
             Usuario usuario = usuarioRepository.findByEmail(email)
+                .map(existingUser -> {
+                    // Usuario existe - verificar si tiene password placeholder de migración
+                    if (MIGRATION_PLACEHOLDER.equals(existingUser.getPassword())) {
+                        // Regenerar contraseña para usuarios migrados con placeholder
+                        String plainPassword = passwordGeneratorService.generatePassword();
+                        passwordsPorEmail.put(email, plainPassword);
+                        
+                        existingUser.setPassword(passwordEncoder.encode(plainPassword));
+                        Usuario updated = usuarioRepository.save(existingUser);
+                        log.info("Password regenerado para usuario migrado: {}", updated.getNombre());
+                        return updated;
+                    }
+                    log.debug("Usuario existente reutilizado: {}", existingUser.getNombre());
+                    return existingUser;
+                })
                 .orElseGet(() -> {
                     // Usuario nuevo - crear con contraseña
                     String plainPassword = passwordGeneratorService.generatePassword();
@@ -114,7 +131,7 @@ public class SorteoService {
                     nuevoUsuario.setFechaCreacion(LocalDateTime.now());
                     
                     Usuario saved = usuarioRepository.save(nuevoUsuario);
-                    log.info("Nuevo usuario creado: {} ({})", saved.getNombre(), saved.getEmail());
+                    log.info("Nuevo usuario creado: {}", saved.getNombre());
                     return saved;
                 });
 
@@ -204,7 +221,8 @@ public class SorteoService {
     }
 
     /**
-     * Envía las contraseñas por email solo a los usuarios nuevos (que tienen entrada en el mapa).
+     * Envía las contraseñas por email solo a los usuarios nuevos o migrados con placeholder.
+     * Los usuarios existentes con contraseñas válidas no reciben email.
      */
     private void enviarPasswordsANuevosUsuarios(List<PerfilSorteo> perfiles, Map<String, String> passwordsPorEmail) {
         perfiles.forEach(perfil -> {
@@ -212,9 +230,9 @@ public class SorteoService {
             if (passwordsPorEmail.containsKey(email)) {
                 String plainPassword = passwordsPorEmail.get(email);
                 emailService.enviarPassword(email, perfil.getUsuario().getNombre(), plainPassword);
-                log.info("Contraseña enviada a nuevo usuario: {}", perfil.getUsuario().getNombre());
+                log.info("Contraseña enviada a usuario: {}", perfil.getUsuario().getNombre());
             } else {
-                log.debug("Usuario existente, no se envía contraseña: {}", perfil.getUsuario().getNombre());
+                log.debug("Usuario existente con contraseña válida, no se envía email: {}", perfil.getUsuario().getNombre());
             }
         });
     }
