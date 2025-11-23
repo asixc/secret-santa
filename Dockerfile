@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
-# Build stage (Alpine, single-arch)
-FROM eclipse-temurin:25-jdk-alpine AS build
+# Build stage (usar imagen Debian en lugar de Alpine para evitar vulnerabilidades de BusyBox)
+FROM eclipse-temurin:25-jdk-jammy AS build
 
 WORKDIR /app
 
@@ -15,15 +15,16 @@ COPY src/ src/
 
 RUN ./gradlew --no-daemon clean bootJar -x test
 
-# Runtime stage (Alpine JRE)
-FROM eclipse-temurin:25-jre-alpine
+# Runtime stage (Debian JRE en lugar de Alpine para evitar CVE-2023-42363, CVE-2023-42364, etc.)
+FROM eclipse-temurin:25-jre-jammy
 
 LABEL org.opencontainers.image.title="Secret Santa"
 LABEL org.opencontainers.image.description="A Secret Santa web application"
 LABEL org.opencontainers.image.authors="jotxee"
 LABEL org.opencontainers.image.source="https://github.com/jotxee/secretsanta"
 
-RUN addgroup -S appuser && adduser -S appuser -G appuser
+# Crear usuario no-root para seguridad
+RUN groupadd -r appuser && useradd -r -g appuser appuser
 
 WORKDIR /app
 
@@ -33,7 +34,9 @@ COPY --from=build /app/build/libs/*.jar /app/app.jar
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD wget -qO- http://localhost:8080/actuator/health | grep -q '"status":"UP"' || exit 1
+# Health check usando curl en lugar de wget (más común en Debian)
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD curl -f http://localhost:8080/actuator/health || exit 1
 
 USER appuser
 
