@@ -154,7 +154,10 @@
                       <span class="participant-name">👤 ${perfil.getUsuario().getNombre()}</span>
                       <span class="participant-email">📧 ${perfil.getUsuario().getEmail()}</span>
                       @if(perfil.getAsignadoA() != null && !perfil.getAsignadoA().isEmpty())
-                        <span class="participant-assigned">🎁 → ${new EmailCryptoService(EmailEncryptConverter.staticKey).encrypt(perfil.getAsignadoA())}</span>
+                        <details class="assignment-details">
+                          <summary class="assignment-summary">🎁 Ver asignación</summary>
+                          <span class="participant-assigned">${new EmailCryptoService(EmailEncryptConverter.staticKey).encrypt(perfil.getAsignadoA())}</span>
+                        </details>
                       @else
                         <span class="participant-assigned">🎁 → Sin asignar</span>
                       @endif
