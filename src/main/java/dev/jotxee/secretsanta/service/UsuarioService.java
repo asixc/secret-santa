@@ -93,7 +93,7 @@ public class UsuarioService {
      */
     @Transactional(readOnly = true)
     public List<PerfilSorteo> obtenerPerfilesDelUsuario(Long usuarioId) {
-        List<PerfilSorteo> perfiles = perfilSorteoRepository.findByUsuarioIdWithDetails(usuarioId);
+        List<PerfilSorteo> perfiles = perfilSorteoRepository.findByUsuarioId(usuarioId);
         
         // Ordenar por fecha de creación del sorteo descendente (más reciente primero)
         perfiles.sort((p1, p2) -> p2.getSorteo().getFechaCreacion().compareTo(p1.getSorteo().getFechaCreacion()));
@@ -107,7 +107,7 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public List<PerfilSorteo> obtenerPerfilesDelUsuarioPorEmail(String email) {
         Usuario usuario = obtenerPorEmail(email);
-        List<PerfilSorteo> perfiles = perfilSorteoRepository.findByUsuarioIdWithDetails(usuario.getId());
+        List<PerfilSorteo> perfiles = perfilSorteoRepository.findByUsuarioId(usuario.getId());
         
         // Ordenar por fecha de creación del sorteo descendente (más reciente primero)
         perfiles.sort((p1, p2) -> p2.getSorteo().getFechaCreacion().compareTo(p1.getSorteo().getFechaCreacion()));
@@ -120,7 +120,7 @@ public class UsuarioService {
      */
     @Transactional(readOnly = true)
     public List<Sorteo> obtenerSorteosDelUsuario(Long usuarioId) {
-        List<PerfilSorteo> perfiles = perfilSorteoRepository.findByUsuarioIdWithDetails(usuarioId);
+        List<PerfilSorteo> perfiles = perfilSorteoRepository.findByUsuarioId(usuarioId);
         
         // Obtener los IDs únicos de sorteos
         List<Long> sorteoIds = perfiles.stream()
