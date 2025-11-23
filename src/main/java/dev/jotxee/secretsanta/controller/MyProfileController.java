@@ -53,22 +53,30 @@ public class MyProfileController {
             List<Sorteo> misSorteos = usuarioService.obtenerSorteosDelUsuario(miUsuario.getId());
             List<Sorteo> sussSorteos = usuarioService.obtenerSorteosDelUsuario(usuarioAVer.getId());
 
-            boolean compartenSorteo = misSorteos.stream()
-                .anyMatch(miSorteo -> sussSorteos.stream()
-                    .anyMatch(suSorteo -> suSorteo.getId().equals(miSorteo.getId())));
+            // Obtener los IDs de los sorteos compartidos
+            List<Long> sorteosCompartidosIds = misSorteos.stream()
+                .filter(miSorteo -> sussSorteos.stream()
+                    .anyMatch(suSorteo -> suSorteo.getId().equals(miSorteo.getId())))
+                .map(Sorteo::getId)
+                .toList();
 
-            if (!compartenSorteo) {
+            if (sorteosCompartidosIds.isEmpty()) {
                 throw new SecurityException("No tienes permiso para ver este perfil");
             }
 
             List<PerfilSorteo> misPerfiles = usuarioService.obtenerPerfilesDelUsuario(miUsuario.getId());
-            List<PerfilSorteo> susPerfiles = usuarioService.obtenerPerfilesDelUsuario(usuarioAVer.getId());
+            List<PerfilSorteo> todosLosPerfilesDelUsuarioAVer = usuarioService.obtenerPerfilesDelUsuario(usuarioAVer.getId());
+            
+            // FILTRAR: Solo mostrar los perfiles de los sorteos compartidos
+            List<PerfilSorteo> perfilesCompartidos = todosLosPerfilesDelUsuarioAVer.stream()
+                .filter(perfil -> sorteosCompartidosIds.contains(perfil.getSorteo().getId()))
+                .toList();
 
             model.addAttribute("usuario", miUsuario);
             model.addAttribute("perfiles", misPerfiles);
             model.addAttribute("sorteos", misSorteos);
             model.addAttribute("viendoUsuario", usuarioAVer);
-            model.addAttribute("viendoPerfiles", susPerfiles);
+            model.addAttribute("viendoPerfiles", perfilesCompartidos);
 
             return "my-profile";
 
