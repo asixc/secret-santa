@@ -70,7 +70,6 @@ management:
 logging:
   level:
     "[org.hibernate.SQL]": DEBUG
-    "[org.hibernate.orm.jdbc.bind]": TRACE
     "[dev.jotxee.secretsanta.event]": DEBUG
     "[dev.jotxee.secretsanta.service.EmailService]": DEBUG
     "[dev.jotxee.secretsanta.controller.CreateController]": DEBUG

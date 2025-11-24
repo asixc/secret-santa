@@ -325,7 +325,7 @@
           @for(var perfil : perfilesAMostrar)
             <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
               <h3 style="margin: 0 0 15px 0; color: #c31432;">
-                🎄 ${perfil.getSorteo().getNombre()}
+                  🎄 ${perfil.getSorteo().getNombre()}@if(sorteos.size() > 1) - ${perfil.getSorteo().getNombreInterno()}@endif
               </h3>
               
               !{var vCamisa = perfil.getTallaCamisa() != null ? perfil.getTallaCamisa() : "No especificada";}
@@ -372,7 +372,7 @@
           @for(var perfil : perfiles)
             <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
               <h3 style="margin: 0 0 15px 0; color: #c31432;">
-                🎄 ${perfil.getSorteo().getNombre()}
+                🎄 ${perfil.getSorteo().getNombre()}@if(perfiles.size() > 1) - ${perfil.getSorteo().getNombreInterno()}@endif
               </h3>
 
               !{var valorCamisa = perfil.getTallaCamisa() != null ? perfil.getTallaCamisa() : "";}
@@ -387,7 +387,7 @@
                 <div class="form-grid">
                   <div class="form-group">
                     <label for="tallaCamisa_${perfil.getId()}">👕 Talla de Camisa</label>
-                    <input type="text" id="tallaCamisa_${perfil.getId()}" name="tallaCamisa" value="${valorCamisa}" placeholder="Ej: M, L, XL">
+                    <input type="text" id="tallaCamisa_${perfil.getId()}" name="tallaCamisa" value="${valorCamisa}" placeholder="Ej: S, M, L, XL">
                   </div>
 
                   <div class="form-group">
@@ -402,7 +402,7 @@
 
                   <div class="form-group">
                     <label for="tallaChaqueta_${perfil.getId()}">🧥 Talla de Chaqueta</label>
-                    <input type="text" id="tallaChaqueta_${perfil.getId()}" name="tallaChaqueta" value="${valorChaqueta}" placeholder="Ej: M, L">
+                    <input type="text" id="tallaChaqueta_${perfil.getId()}" name="tallaChaqueta" value="${valorChaqueta}" placeholder="Ej: S, M, L">
                   </div>
                 </div>
 
@@ -458,7 +458,6 @@
         @endif
       </div>
     @endif
-
   </div>
 </body>
 </html>
