@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'dev.jotxee'
-version = '0.0.7'
+version = '0.0.8'
 description = 'A Secret Santa web application that lets users create raffles, randomly assign who gives a gift to whom, and automatically send a personalized email to each participant with their Secret Santa match.'
 
 java {

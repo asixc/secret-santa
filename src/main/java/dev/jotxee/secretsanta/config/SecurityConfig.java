@@ -1,5 +1,6 @@
 package dev.jotxee.secretsanta.config;
 
+import dev.jotxee.secretsanta.security.ParticipanteUserDetails;
 import dev.jotxee.secretsanta.security.ParticipanteUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,7 +68,11 @@ public class SecurityConfig {
                 .loginPage("/login")
                 .permitAll()
                 .successHandler((request, response, authentication) -> {
-                    log.info("Login exitoso para: {}", authentication.getName());
+                    // Get the user's name instead of email for logging
+                    String userName = authentication.getPrincipal() instanceof ParticipanteUserDetails userDetails
+                            ? userDetails.getUsuario().getNombre()
+                            : "usuario";
+                    log.info("Login exitoso para: {}", userName);
                     if (authentication.getAuthorities().stream()
                             .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
                         response.sendRedirect("/create");
