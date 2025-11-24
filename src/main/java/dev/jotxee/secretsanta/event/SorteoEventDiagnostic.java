@@ -40,7 +40,7 @@ public class SorteoEventDiagnostic {
         // Solo enviamos UN email desde aquí para evitar duplicados
         if (!event.participants().isEmpty()) {
             var firstParticipant = event.participants().get(0);
-            log.info("📧 Enviando email de prueba a primer participante: {}", firstParticipant.email());
+            log.info("📧 Enviando email de prueba a primer participante: {}", firstParticipant.name());
             emailService.sendParticipantEmail(
                 event.sorteoName() + " (AFTER_COMMIT)", 
                 event.importeMinimo(),

@@ -40,7 +40,7 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
 
         emailService.enviarPassword(usuario.getEmail(), usuario.getNombre(), plainPassword);
-        log.info("Contraseña regenerada y enviada para usuario: {}", usuario.getEmail());
+        log.info("Contraseña regenerada y enviada para usuario: {}", usuario.getNombre());
 
         return plainPassword;
     }
@@ -58,7 +58,7 @@ public class UsuarioService {
         perfil.setPreferencias(preferencias);
 
         perfilSorteoRepository.save(perfil);
-        log.info("Tallas actualizadas para perfil: {} del usuario: {}", perfil.getId(), perfil.getUsuario().getEmail());
+        log.info("Tallas actualizadas para perfil: {} del usuario: {}", perfil.getId(), perfil.getUsuario().getNombre());
     }
 
     /**
