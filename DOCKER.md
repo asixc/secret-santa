@@ -120,7 +120,7 @@ APP_BASE_URL=http://localhost:8080
 - Resource limits: 1GB RAM, 2 CPUs
 
 ### PostgreSQL (postgres)
-- PostgreSQL 16 Alpine
+- PostgreSQL 18 Alpine
 - Data persistence with volumes
 - Health checks configured
 - Resource limits: 512MB RAM, 1 CPU

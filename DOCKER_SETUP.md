@@ -66,7 +66,7 @@
 
 #### Services
 - **app**: Spring Boot application with health checks
-- **postgres**: PostgreSQL 16 Alpine with persistence
+- **postgres**: PostgreSQL 18 Alpine with persistence
 - **pgadmin**: Optional database admin UI
 
 #### Features
