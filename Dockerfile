@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-# Build stage (Alpine, single-arch)
+# Build stage
 FROM eclipse-temurin:25-jdk-alpine AS build
 
 WORKDIR /app
@@ -15,14 +15,15 @@ COPY src/ src/
 
 RUN ./gradlew --no-daemon clean bootJar -x test
 
-# Runtime stage (Alpine JRE)
+# Runtime stage - Alpine (más ligero para VPS)
 FROM eclipse-temurin:25-jre-alpine
 
 LABEL org.opencontainers.image.title="Secret Santa"
 LABEL org.opencontainers.image.description="A Secret Santa web application"
 LABEL org.opencontainers.image.authors="jotxee"
-LABEL org.opencontainers.image.source="https://github.com/jotxee/secretsanta"
+LABEL org.opencontainers.image.source="https://github.com/asixc/secret-santa"
 
+# Crear usuario no-root para seguridad
 RUN addgroup -S appuser && adduser -S appuser -G appuser
 
 WORKDIR /app
@@ -33,7 +34,9 @@ COPY --from=build /app/build/libs/*.jar /app/app.jar
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD wget -qO- http://localhost:8080/actuator/health | grep -q '"status":"UP"' || exit 1
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD wget -qO- http://localhost:8080/actuator/health | grep -q '"status":"UP"' || exit 1
 
 USER appuser
 

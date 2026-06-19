@@ -123,7 +123,7 @@ public class CreateController {
             String email = perfil.getUsuario().getEmail();
             usuarioService.regenerarYEnviarPassword(email);
 
-            log.info("Contraseña regenerada para usuario con email: {}", email);
+            log.info("Contraseña regenerada para usuario: {}", perfil.getUsuario().getNombre());
 
             redirectAttributes.addFlashAttribute("success",
                 "Contraseña regenerada y enviada por email correctamente");

@@ -120,7 +120,7 @@ public class MyProfileController {
             );
 
             redirectAttributes.addFlashAttribute("success", "Tallas actualizadas correctamente");
-            log.info("Tallas actualizadas para perfil: {} del usuario: {}", perfilId, usuario.getEmail());
+            log.info("Tallas actualizadas para perfil: {} del usuario: {}", perfilId, usuario.getNombre());
 
         } catch (SecurityException e) {
             log.warn("Intento de modificación no autorizado: {}", e.getMessage());
