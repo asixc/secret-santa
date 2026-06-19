@@ -14,6 +14,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.HtmlUtils;
 
 import java.nio.charset.StandardCharsets;
 
@@ -46,8 +47,8 @@ public class EmailService {
             helper.setSubject("🎅 Resultado del sorteo: " + sorteoName);
             
             String htmlContent = loadEmailTemplate();
-            htmlContent = htmlContent.replace("{{PARTICIPANT_NAME}}", participant.name());
-            htmlContent = htmlContent.replace("{{SORTEO_NAME}}", sorteoName);
+            htmlContent = htmlContent.replace("{{PARTICIPANT_NAME}}", HtmlUtils.htmlEscape(participant.name()));
+            htmlContent = htmlContent.replace("{{SORTEO_NAME}}", HtmlUtils.htmlEscape(sorteoName));
             htmlContent = htmlContent.replace("{{REVEAL_URL}}", buildRevealUrl(participant.token()));
             htmlContent = htmlContent.replace("{{GIFT_BUDGET}}", buildGiftBudgetText(importeMinimo, importeMaximo));
             
@@ -131,8 +132,8 @@ public class EmailService {
             helper.setSubject("🔑 Tu contraseña para Amigo Invisible");
 
             String htmlContent = loadPasswordEmailTemplate();
-            htmlContent = htmlContent.replace("{{PARTICIPANT_NAME}}", nombre);
-            htmlContent = htmlContent.replace("{{PASSWORD}}", password);
+            htmlContent = htmlContent.replace("{{PARTICIPANT_NAME}}", HtmlUtils.htmlEscape(nombre));
+            htmlContent = htmlContent.replace("{{PASSWORD}}", HtmlUtils.htmlEscape(password));
             htmlContent = htmlContent.replace("{{LOGIN_URL}}", applicationBaseUrl.endsWith("/")
                 ? applicationBaseUrl + "login"
                 : applicationBaseUrl + "/login");
