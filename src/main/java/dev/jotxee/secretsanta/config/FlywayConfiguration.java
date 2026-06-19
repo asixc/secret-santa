@@ -12,9 +12,9 @@ import org.springframework.context.annotation.Primary;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Configuración manual de Flyway para Spring Boot 4.0.0-SNAPSHOT.
+ * Configuración manual de Flyway para Spring Boot 4.
  * 
- * Spring Boot 4.0.0-SNAPSHOT parece no auto-configurar Flyway correctamente,
+ * Spring Boot 4 puede no auto-configurar Flyway correctamente en este proyecto,
  * por lo que creamos un bean manual que se ejecuta antes de Hibernate.
  */
 @Slf4j
