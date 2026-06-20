@@ -16,7 +16,7 @@ COPY src/ src/
 RUN ./gradlew --no-daemon clean bootJar -x test
 
 # Runtime stage
-FROM cgr.dev/chainguard/jdk:latest
+FROM cgr.dev/chainguard/jre:latest
 
 LABEL org.opencontainers.image.title="Secret Santa"
 LABEL org.opencontainers.image.description="A Secret Santa web application"
@@ -25,14 +25,8 @@ LABEL org.opencontainers.image.source="https://github.com/asixc/secret-santa"
 
 WORKDIR /app
 
-ENV JAVA_OPTS=""
-
 COPY --from=build /app/build/libs/*.jar /app/app.jar
 
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD wget -qO- http://localhost:8080/actuator/health | grep -q '"status":"UP"' || exit 1
-
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/app/app.jar"]
