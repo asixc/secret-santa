@@ -89,17 +89,23 @@ jobs:
             VERSION=${{ steps.meta.outputs.version }}
 
       - name: Run Trivy vulnerability scanner (SARIF)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          scanners: 'vuln,secret'
+          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
+          ignore-unfixed: true
           format: 'sarif'
           output: 'trivy-results.sarif'
 
       - name: Run Trivy vulnerability scanner (report)
         if: always()
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          scanners: 'vuln,secret'
+          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
+          ignore-unfixed: true
           format: 'table'
           output: 'trivy-results.txt'
 
