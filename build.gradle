@@ -36,7 +36,7 @@ dependencies {
 	implementation 'gg.jte:jte-spring-boot-starter-4:3.2.5'
 	implementation 'gg.jte:jte:3.2.5'
 	// ✅ AÑADIDO: Incluir explícitamente jte-runtime para asegurar que HtmlTemplateOutput esté disponible
-	implementation 'gg.jte:jte-runtime:3.2.4'
+	implementation 'gg.jte:jte-runtime:3.2.5'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
