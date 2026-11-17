@@ -176,7 +176,10 @@ jobs:
 
           git clone "https://x-access-token:${GITOPS_TOKEN}@github.com/asixc/gitops-config.git" /tmp/gitops
           cd /tmp/gitops
-          test -f apps/base/secret-santa/deployment.yaml
+          if [ ! -f apps/base/secret-santa/deployment.yaml ]; then
+            echo "Secret Santa deployment is not in GitOps yet; skipping bootstrap update"
+            exit 0
+          fi
           sed -i "s|image: registry.full4media.com/apps/secret-santa:.*|image: ${IMAGE}|" \
             apps/base/secret-santa/deployment.yaml
           git config user.name "github-actions[bot]"
