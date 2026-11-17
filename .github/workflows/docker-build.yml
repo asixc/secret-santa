@@ -1,23 +1,24 @@
-name: Build and Push Docker Image
+name: Build and Publish Docker Image
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
     tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: registry.full4media.com
+  IMAGE_NAME: apps/secret-santa
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
       security-events: write
+      actions: read
 
     steps:
       - name: Checkout repository
@@ -32,6 +33,17 @@ jobs:
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
+
+      - name: Read version from build.gradle
+        id: version
+        run: |
+          VERSION=$(./gradlew -q properties | awk '$1 == "version:" { print $2; exit }')
+          if [ -z "$VERSION" ]; then
+            echo "Could not determine the project version"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
       - name: Build with Gradle
         run: ./gradlew build -x test
@@ -52,46 +64,20 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
-      - name: Log in to Container Registry
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha
-
-      - name: Build and push Docker image
+      - name: Build image for scanning
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          load: ${{ github.event_name == 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          push: false
+          load: true
+          tags: secret-santa:${{ steps.version.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            BUILD_DATE=${{ github.event.head_commit.timestamp }}
-            VCS_REF=${{ github.sha }}
-            VERSION=${{ steps.meta.outputs.version }}
 
       - name: Run Trivy vulnerability scanner (SARIF)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          image-ref: secret-santa:${{ steps.version.outputs.version }}
           scanners: 'vuln,secret'
           severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
           ignore-unfixed: true
@@ -102,7 +88,7 @@ jobs:
         if: always()
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          image-ref: secret-santa:${{ steps.version.outputs.version }}
           scanners: 'vuln,secret'
           severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
           ignore-unfixed: true
@@ -115,7 +101,7 @@ jobs:
           {
             echo '## Trivy vulnerability report'
             echo ''
-            echo 'Image: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}`'
+            echo 'Image: `secret-santa:${{ steps.version.outputs.version }}`'
             echo ''
             echo '<details><summary>Show report</summary>'
             echo ''
@@ -145,7 +131,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
         with:
-          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          image: secret-santa:${{ steps.version.outputs.version }}
           format: spdx-json
           output-file: sbom.spdx.json
 
@@ -155,3 +141,53 @@ jobs:
         with:
           name: sbom
           path: sbom.spdx.json
+
+      - name: Login to Zot registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Push image to Zot
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          LOCAL_IMAGE="secret-santa:${{ steps.version.outputs.version }}"
+          VERSION_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}"
+          VERSION_SHA_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}-${{ steps.version.outputs.short_sha }}"
+
+          docker tag "$LOCAL_IMAGE" "$VERSION_IMAGE"
+          docker tag "$LOCAL_IMAGE" "$VERSION_SHA_IMAGE"
+          docker push "$VERSION_IMAGE"
+          docker push "$VERSION_SHA_IMAGE"
+
+      - name: Update gitops-config deployment
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          SHORT_SHA="${{ steps.version.outputs.short_sha }}"
+          VERSION_SHA_TAG="${VERSION}-${SHORT_SHA}"
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION_SHA_TAG}"
+
+          git clone "https://x-access-token:${GITOPS_TOKEN}@github.com/asixc/gitops-config.git" /tmp/gitops
+          cd /tmp/gitops
+          if [ ! -f apps/base/secret-santa/deployment.yaml ]; then
+            echo "Secret Santa deployment is not in GitOps yet; skipping bootstrap update"
+            exit 0
+          fi
+          sed -i "s|image: registry.full4media.com/apps/secret-santa:.*|image: ${IMAGE}|" \
+            apps/base/secret-santa/deployment.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add apps/base/secret-santa/deployment.yaml
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore(secret-santa): bump image to ${VERSION} (sha-${SHORT_SHA})"
+            git push
+          fi

@@ -16,7 +16,7 @@ COPY src/ src/
 RUN ./gradlew --no-daemon clean bootJar -x test
 
 # Runtime stage
-FROM cgr.dev/chainguard/jre:latest
+FROM cgr.dev/chainguard/jre:latest@sha256:83582e2c1da60b3aa931a011921fecee0f0d6ef2f53233ddbd66e83ee636123a
 
 LABEL org.opencontainers.image.title="Secret Santa"
 LABEL org.opencontainers.image.description="A Secret Santa web application"

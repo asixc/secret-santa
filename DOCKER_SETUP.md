@@ -112,7 +112,7 @@
 ### CI/CD
 1. **Automated testing** - Run on every push
 2. **Multi-platform** - AMD64 and ARM64 support
-3. **Registry integration** - GitHub Container Registry
+3. **Registry integration** - Zot private registry
 4. **Security scanning** - On every build
 5. **Artifact upload** - Test results and SBOM
 
@@ -125,8 +125,8 @@ docker-compose up -d
 
 ### Production
 ```bash
-docker pull ghcr.io/your-username/secretsanta:v1.0.0
-docker run -d --env-file .env ghcr.io/your-username/secretsanta:v1.0.0
+docker pull registry.full4media.com/apps/secret-santa:0.1.0-abcdef1
+docker run -d --env-file .env registry.full4media.com/apps/secret-santa:0.1.0-abcdef1
 ```
 
 ### CI/CD Trigger
