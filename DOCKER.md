@@ -65,16 +65,17 @@ docker run -d \
 
 ### 🔄 CI/CD
 - ✅ Automated builds on push
-- ✅ Container registry integration (GHCR)
+- ✅ Container registry integration (Zot)
 - ✅ Semantic versioning
 - ✅ Build cache enabled
 - ✅ Vulnerability scanning
+- ✅ Scheduled scanning of the deployed image
 
 ## Image Details
 
 **Base Images:**
-- Build: `gradle:8.11.1-jdk25-alpine`
-- Runtime: `eclipse-temurin:25-jre-alpine`
+- Build: `eclipse-temurin:25-jdk-alpine`
+- Runtime: `cgr.dev/chainguard/jre` pinned by digest
 
 **Image Size:** ~300MB (optimized with layers)
 
@@ -184,17 +185,15 @@ docker network inspect secretsanta_secretsanta-network
 # Check environment variables
 docker-compose exec app env | grep MAIL
 
-# Test email configuration
-curl "http://localhost:8080/test/email?email=test@example.com"
 ```
 
 ## Production Deployment
 
-### With GitHub Container Registry
+### With Zot Registry
 
 ```bash
 # Pull from registry
-docker pull ghcr.io/your-username/secretsanta:latest
+docker pull registry.full4media.com/apps/secret-santa:0.1.0-abcdef1
 
 # Run with production settings
 docker run -d \
@@ -202,7 +201,7 @@ docker run -d \
   --name secretsanta \
   --env-file .env.production \
   --restart unless-stopped \
-  ghcr.io/your-username/secretsanta:latest
+  registry.full4media.com/apps/secret-santa:0.1.0-abcdef1
 ```
 
 ### Resource Recommendations
@@ -218,6 +217,11 @@ docker run -d \
 - Disk: 5GB
 
 ## Security Scanning
+
+The build workflow scans every image before publishing it. A separate scheduled
+workflow scans the image referenced by `gitops-config` every day and uploads
+results to GitHub Security. Vulnerabilities are reported but do not block a
+deployment.
 
 ```bash
 # Scan with Trivy
