@@ -46,10 +46,12 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void actualizarTallas(Long perfilId, String tallaCamisa, String tallaPantalon,
-                                  String tallaZapato, String tallaChaqueta, String preferencias) {
-        PerfilSorteo perfil = perfilSorteoRepository.findById(perfilId)
-            .orElseThrow(() -> new RuntimeException(PERFIL_NO_ENCONTRADO));
+    public PerfilSorteo actualizarPerfilSorteo(Long usuarioId, Long perfilId,
+                                                String tallaCamisa, String tallaPantalon,
+                                                String tallaZapato, String tallaChaqueta,
+                                                String preferencias) {
+        PerfilSorteo perfil = perfilSorteoRepository.findByIdAndUsuarioId(perfilId, usuarioId)
+            .orElseThrow(() -> new SecurityException("No puedes modificar este perfil"));
 
         perfil.setTallaCamisa(tallaCamisa);
         perfil.setTallaPantalon(tallaPantalon);
@@ -58,7 +60,8 @@ public class UsuarioService {
         perfil.setPreferencias(preferencias);
 
         perfilSorteoRepository.save(perfil);
-        log.info("Tallas actualizadas para perfil: {} del usuario: {}", perfil.getId(), perfil.getUsuario().getNombre());
+        log.info("Perfil del sorteo actualizado: {} del usuario: {}", perfil.getId(), perfil.getUsuario().getNombre());
+        return perfil;
     }
 
     /**
@@ -130,8 +133,12 @@ public class UsuarioService {
             .distinct()
             .collect(Collectors.toList());
 
+        if (sorteoIds.isEmpty()) {
+            return List.of();
+        }
+
         // Cargar sorteos con sus perfiles eagerly para evitar LazyInitializationException
-        List<Sorteo> sorteos = sorteoIds.isEmpty() ? List.of() : sorteoRepository.findByIdInWithPerfiles(sorteoIds);
+        List<Sorteo> sorteos = sorteoRepository.findByIdInWithPerfiles(sorteoIds);
         
         // Ordenar por fecha de creación descendente (más reciente primero)
         sorteos.sort((s1, s2) -> s2.getFechaCreacion().compareTo(s1.getFechaCreacion()));

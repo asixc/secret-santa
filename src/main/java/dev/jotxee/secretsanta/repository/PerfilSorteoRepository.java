@@ -32,4 +32,9 @@ public interface PerfilSorteoRepository extends JpaRepository<PerfilSorteo, Long
     
     @Query("SELECT ps FROM PerfilSorteo ps JOIN FETCH ps.usuario WHERE ps.id = :id")
     Optional<PerfilSorteo> findByIdWithUsuario(@Param("id") Long id);
+
+    @Query("SELECT ps FROM PerfilSorteo ps JOIN FETCH ps.usuario JOIN FETCH ps.sorteo " +
+           "WHERE ps.id = :perfilId AND ps.usuario.id = :usuarioId")
+    Optional<PerfilSorteo> findByIdAndUsuarioId(@Param("perfilId") Long perfilId,
+                                                @Param("usuarioId") Long usuarioId);
 }

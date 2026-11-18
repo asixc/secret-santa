@@ -91,7 +91,7 @@ public class MyProfileController {
     }
 
     @PostMapping("/actualizar-tallas")
-    public String actualizarTallas(
+    public String actualizarPerfilSorteo(
             @AuthenticationPrincipal ParticipanteUserDetails userDetails,
             @RequestParam Long perfilId,
             @RequestParam(required = false) String tallaCamisa,
@@ -103,14 +103,8 @@ public class MyProfileController {
 
         try {
             Usuario usuario = usuarioService.obtenerPorEmail(userDetails.getUsername());
-            PerfilSorteo perfil = usuarioService.obtenerPerfilPorId(perfilId);
-
-            // Verificar que el perfil pertenece al usuario autenticado
-            if (!perfil.getUsuario().getId().equals(usuario.getId())) {
-                throw new SecurityException("No puedes modificar este perfil");
-            }
-
-            usuarioService.actualizarTallas(
+            PerfilSorteo perfil = usuarioService.actualizarPerfilSorteo(
+                usuario.getId(),
                 perfilId,
                 tallaCamisa,
                 tallaPantalon,
@@ -119,15 +113,18 @@ public class MyProfileController {
                 preferencias
             );
 
-            redirectAttributes.addFlashAttribute("success", "Tallas actualizadas correctamente");
-            log.info("Tallas actualizadas para perfil: {} del usuario: {}", perfilId, usuario.getNombre());
+            redirectAttributes.addFlashAttribute(
+                "success",
+                "Perfil del sorteo \"" + perfil.getSorteo().getNombre() + "\" actualizado correctamente"
+            );
+            log.info("Perfil del sorteo actualizado: {} para usuario: {}", perfilId, usuario.getNombre());
 
         } catch (SecurityException e) {
             log.warn("Intento de modificación no autorizado: {}", e.getMessage());
             redirectAttributes.addFlashAttribute("error", "No tienes permiso para modificar este perfil");
         } catch (Exception e) {
-            log.error("Error al actualizar tallas", e);
-            redirectAttributes.addFlashAttribute("error", "Error al actualizar las tallas");
+            log.error("Error al actualizar el perfil del sorteo", e);
+            redirectAttributes.addFlashAttribute("error", "Error al actualizar el perfil del sorteo");
         }
 
         return "redirect:/my-profile";
@@ -152,4 +149,3 @@ public class MyProfileController {
         return usuarioService.obtenerPerfilesPorSorteo(sorteoId);
     }
 }
-

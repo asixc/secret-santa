@@ -59,18 +59,27 @@
 
     .profile-header .logout-btn {
       display: inline-block;
-      margin-top: 15px;
       padding: 10px 25px;
-      background: rgba(255,255,255,0.2);
+      background: rgba(120, 0, 24, 0.55);
+      border: 1px solid rgba(255,255,255,0.45);
       color: white;
       text-decoration: none;
       border-radius: 25px;
       font-size: 14px;
-      transition: background 0.3s;
+      transition: background 0.3s, transform 0.2s;
     }
 
     .profile-header .logout-btn:hover {
-      background: rgba(255,255,255,0.3);
+      background: rgba(120, 0, 24, 0.8);
+      transform: translateY(-2px);
+    }
+
+    .profile-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 24px;
     }
 
     .alert {
@@ -117,6 +126,19 @@
       font-size: 24px;
       border-bottom: 2px solid #f0f0f0;
       padding-bottom: 10px;
+    }
+
+    .draws-section {
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
+    }
+
+    .draws-section > h2 {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
     .form-group {
@@ -191,7 +213,6 @@
 
     .back-to-profile-btn {
       display: inline-block;
-      margin-top: 15px;
       padding: 10px 25px;
       background: rgba(255,255,255,0.9);
       color: #c31432;
@@ -208,11 +229,32 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
+    .profile-draw-context {
+      margin: -8px 0 15px;
+      color: #666;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    @media (max-width: 600px) {
+      .profile-actions {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .profile-actions a {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+      }
+
+    }
+
     .sorteo-card {
       background: #f8f9fa;
       padding: 20px;
       border-radius: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 32px;
       border-left: 4px solid #c31432;
     }
 
@@ -225,6 +267,32 @@
       color: #666;
       font-size: 14px;
       margin-bottom: 15px;
+    }
+
+    .draw-profile-card {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #c31432;
+    }
+
+    .draw-profile-card h3 {
+      margin: 0 0 15px;
+      color: #c31432;
+    }
+
+    .draw-profile-editor {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border: 1px solid #ececec;
+    }
+
+    .draw-profile-editor h4 {
+      margin: 0 0 15px;
+      color: #c31432;
     }
 
     .participantes-list {
@@ -291,11 +359,13 @@
       @if(viendoUsuario.getId().equals(usuario.getId()))
         <div class="email">${usuario.getEmail()}</div>
       @endif
-      <a href="/logout" class="logout-btn">🚪 Cerrar Sesión</a>
-      
-      @if(!viendoUsuario.getId().equals(usuario.getId()))
-        <a href="/my-profile" class="back-to-profile-btn">↩️ Volver a mi perfil</a>
-      @endif
+      <div class="profile-actions">
+        @if(viendoUsuario.getId().equals(usuario.getId()))
+          <a href="/logout" class="logout-btn">🚪 Cerrar Sesión</a>
+        @else
+          <a href="/my-profile" class="back-to-profile-btn">↩️ Volver a mi perfil</a>
+        @endif
+      </div>
     </div>
 
     <!-- Mensajes -->
@@ -311,24 +381,21 @@
       </div>
     @endif
 
-    <!-- Información de tallas -->
-    <div class="section">
-      <h2>📏 Información de Tallas</h2>
+    @if(!viendoUsuario.getId().equals(usuario.getId()))
+      <div class="section">
+        <h2>📏 Tallas y preferencias por sorteo</h2>
 
-      @if(!viendoUsuario.getId().equals(usuario.getId()))
         !{var perfilesAMostrar = viendoPerfiles != null ? viendoPerfiles : perfiles;}
-        
         @if(perfilesAMostrar.isEmpty())
           <p style="text-align: center; padding: 20px; color: #999;">
             Este usuario no tiene información de tallas todavía.
           </p>
         @else
           @for(var perfil : perfilesAMostrar)
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-              <h3 style="margin: 0 0 15px 0; color: #c31432;">
-                  🎄 ${perfil.getSorteo().getNombre()}@if(sorteos.size() > 1) - ${perfil.getSorteo().getNombreInterno()}@endif
-              </h3>
-              
+            <div class="draw-profile-card">
+              <h3>🎄 ${perfil.getSorteo().getNombre()}@if(perfilesAMostrar.size() > 1 && perfil.getSorteo().getNombreInterno() != null && !perfil.getSorteo().getNombreInterno().isEmpty()) - ${perfil.getSorteo().getNombreInterno()}@endif</h3>
+              <div class="profile-draw-context">Datos específicos de este sorteo</div>
+
               !{var vCamisa = perfil.getTallaCamisa() != null ? perfil.getTallaCamisa() : "No especificada";}
               !{var vPantalon = perfil.getTallaPantalon() != null ? perfil.getTallaPantalon() : "No especificada";}
               !{var vZapato = perfil.getTallaZapato() != null ? perfil.getTallaZapato() : "No especificada";}
@@ -340,17 +407,14 @@
                   <label>👕 Camisa</label>
                   <input type="text" readonly value="${vCamisa}">
                 </div>
-
                 <div class="form-group">
                   <label>👖 Pantalón</label>
                   <input type="text" readonly value="${vPantalon}">
                 </div>
-
                 <div class="form-group">
                   <label>👟 Zapato</label>
                   <input type="text" readonly value="${vZapato}">
                 </div>
-
                 <div class="form-group">
                   <label>🧥 Chaqueta</label>
                   <input type="text" readonly value="${vChaqueta}">
@@ -364,65 +428,9 @@
             </div>
           @endfor
         @endif
-      @else
-        @if(perfiles.isEmpty())
-          <p style="text-align: center; padding: 20px; color: #999;">
-            📭 No estás participando en ningún sorteo todavía.
-          </p>
-        @else
-          @for(var perfil : perfiles)
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-              <h3 style="margin: 0 0 15px 0; color: #c31432;">
-                🎄 ${perfil.getSorteo().getNombre()}@if(perfiles.size() > 1) - ${perfil.getSorteo().getNombreInterno()}@endif
-              </h3>
-
-              !{var valorCamisa = perfil.getTallaCamisa() != null ? perfil.getTallaCamisa() : "";}
-              !{var valorPantalon = perfil.getTallaPantalon() != null ? perfil.getTallaPantalon() : "";}
-              !{var valorZapato = perfil.getTallaZapato() != null ? perfil.getTallaZapato() : "";}
-              !{var valorChaqueta = perfil.getTallaChaqueta() != null ? perfil.getTallaChaqueta() : "";}
-              !{var valorPreferencias = perfil.getPreferencias() != null ? perfil.getPreferencias() : "";}
-
-              <form action="/my-profile/actualizar-tallas" method="post">
-                <input type="hidden" name="perfilId" value="${perfil.getId()}">
-                
-                <div class="form-grid">
-                  <div class="form-group">
-                    <label for="tallaCamisa_${perfil.getId()}">👕 Talla de Camisa</label>
-                    <input type="text" id="tallaCamisa_${perfil.getId()}" name="tallaCamisa" value="${valorCamisa}" placeholder="Ej: S, M, L, XL">
-                  </div>
-
-                  <div class="form-group">
-                    <label for="tallaPantalon_${perfil.getId()}">👖 Talla de Pantalón</label>
-                    <input type="text" id="tallaPantalon_${perfil.getId()}" name="tallaPantalon" value="${valorPantalon}" placeholder="Ej: 42, 44">
-                  </div>
-
-                  <div class="form-group">
-                    <label for="tallaZapato_${perfil.getId()}">👟 Talla de Zapato</label>
-                    <input type="text" id="tallaZapato_${perfil.getId()}" name="tallaZapato" value="${valorZapato}" placeholder="Ej: 42, 38">
-                  </div>
-
-                  <div class="form-group">
-                    <label for="tallaChaqueta_${perfil.getId()}">🧥 Talla de Chaqueta</label>
-                    <input type="text" id="tallaChaqueta_${perfil.getId()}" name="tallaChaqueta" value="${valorChaqueta}" placeholder="Ej: S, M, L">
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label for="preferencias_${perfil.getId()}">💭 Preferencias y gustos</label>
-                  <textarea id="preferencias_${perfil.getId()}" name="preferencias" placeholder="Cuéntanos tus gustos, hobbies, colores favoritos, etc.">${valorPreferencias}</textarea>
-                </div>
-
-                <button type="submit" class="btn-primary">💾 Guardar Cambios</button>
-              </form>
-            </div>
-          @endfor
-        @endif
-      @endif
-    </div>
-
-    <!-- Mis sorteos -->
-    @if(viendoUsuario.getId().equals(usuario.getId()))
-      <div class="section">
+      </div>
+    @else
+      <div class="section draws-section">
         <h2>🎁 Mis Sorteos</h2>
 
         @if(sorteos.isEmpty())
@@ -430,10 +438,53 @@
         @else
           !{var formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");}
           @for(var sorteo : sorteos)
+            !{var perfilDelSorteo = perfiles.stream().filter(perfil -> perfil.getSorteo().getId().equals(sorteo.getId())).findFirst().orElse(null);}
             <div class="sorteo-card">
-              <h3>🎄 ${sorteo.getNombre()}</h3>
+              <h3>🎄 ${sorteo.getNombre()}@if(sorteo.getNombreInterno() != null && !sorteo.getNombreInterno().isEmpty()) - ${sorteo.getNombreInterno()}@endif</h3>
               <div class="fecha">📅 Creado: ${sorteo.getFechaCreacion().format(formatter)}</div>
-              
+
+              @if(perfilDelSorteo != null)
+                <div class="draw-profile-editor">
+                  <h4>📏 Mis tallas y preferencias</h4>
+                  <div class="profile-draw-context">Solo se aplican a este sorteo</div>
+
+                  !{var valorCamisa = perfilDelSorteo.getTallaCamisa() != null ? perfilDelSorteo.getTallaCamisa() : "";}
+                  !{var valorPantalon = perfilDelSorteo.getTallaPantalon() != null ? perfilDelSorteo.getTallaPantalon() : "";}
+                  !{var valorZapato = perfilDelSorteo.getTallaZapato() != null ? perfilDelSorteo.getTallaZapato() : "";}
+                  !{var valorChaqueta = perfilDelSorteo.getTallaChaqueta() != null ? perfilDelSorteo.getTallaChaqueta() : "";}
+                  !{var valorPreferencias = perfilDelSorteo.getPreferencias() != null ? perfilDelSorteo.getPreferencias() : "";}
+
+                  <form action="/my-profile/actualizar-tallas" method="post">
+                    <input type="hidden" name="perfilId" value="${perfilDelSorteo.getId()}">
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="tallaCamisa_${perfilDelSorteo.getId()}">👕 Talla de Camisa</label>
+                        <input type="text" id="tallaCamisa_${perfilDelSorteo.getId()}" name="tallaCamisa" value="${valorCamisa}" placeholder="Ej: S, M, L, XL">
+                      </div>
+                      <div class="form-group">
+                        <label for="tallaPantalon_${perfilDelSorteo.getId()}">👖 Talla de Pantalón</label>
+                        <input type="text" id="tallaPantalon_${perfilDelSorteo.getId()}" name="tallaPantalon" value="${valorPantalon}" placeholder="Ej: 42, 44">
+                      </div>
+                      <div class="form-group">
+                        <label for="tallaZapato_${perfilDelSorteo.getId()}">👟 Talla de Zapato</label>
+                        <input type="text" id="tallaZapato_${perfilDelSorteo.getId()}" name="tallaZapato" value="${valorZapato}" placeholder="Ej: 42, 38">
+                      </div>
+                      <div class="form-group">
+                        <label for="tallaChaqueta_${perfilDelSorteo.getId()}">🧥 Talla de Chaqueta</label>
+                        <input type="text" id="tallaChaqueta_${perfilDelSorteo.getId()}" name="tallaChaqueta" value="${valorChaqueta}" placeholder="Ej: S, M, L">
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="preferencias_${perfilDelSorteo.getId()}">💭 Preferencias y gustos</label>
+                      <textarea id="preferencias_${perfilDelSorteo.getId()}" name="preferencias" placeholder="Cuéntanos tus gustos, hobbies, colores favoritos, etc.">${valorPreferencias}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary">💾 Guardar Cambios</button>
+                  </form>
+                </div>
+              @endif
+
               <h4 style="margin-top: 20px; margin-bottom: 10px; color: #666;">👥 Participantes del sorteo:</h4>
               <div class="participantes-list">
                 @for(var p : sorteo.getPerfiles())
