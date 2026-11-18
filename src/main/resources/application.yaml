@@ -44,6 +44,12 @@ spring:
         transport:
           protocol: smtp
 
+server:
+  servlet:
+    session:
+      cookie:
+        name: SECRET_SANTA_SESSION
+
 gg:
   jte:
     development-mode: true           # para local
