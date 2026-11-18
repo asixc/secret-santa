@@ -17,6 +17,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Mi Perfil - Amigo Invisible</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="stylesheet" href="/css/styles.css" />
   <style>
     body {
@@ -461,4 +462,3 @@
   </div>
 </body>
 </html>
-

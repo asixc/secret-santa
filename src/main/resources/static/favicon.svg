@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Secret Santa</title>
+  <desc id="desc">Regalo sonriente de Secret Santa</desc>
+  <rect width="64" height="64" rx="14" fill="#071133"/>
+  <path d="M9 15h2m-1-1v2M52 11h2m-1-1v2" stroke="#ffeb3b" stroke-linecap="round" stroke-width="2"/>
+  <path d="M18 27c-2-7 4-12 10-8 2-6 10-6 12 0 6-4 12 1 10 8" fill="#f44336" stroke="#b62d2d" stroke-linejoin="round" stroke-width="2"/>
+  <path d="M31 19 28 11l8 5" fill="#ff7a59" stroke="#d6533b" stroke-linejoin="round" stroke-width="2"/>
+  <rect x="14" y="27" width="36" height="27" rx="4" fill="#2d7a5b" stroke="#194b3a" stroke-width="2"/>
+  <rect x="11" y="23" width="42" height="10" rx="3" fill="#3d9970" stroke="#194b3a" stroke-width="2"/>
+  <path d="M29 23h7v31h-7z" fill="#ff7a59"/>
+  <path d="M32.5 23c-8 0-12-3-9-6 3-3 8 1 9 6Zm0 0c8 0 12-3 9-6-3-3-8 1-9 6Z" fill="#f44336" stroke="#b62d2d" stroke-linejoin="round" stroke-width="2"/>
+  <circle cx="25" cy="42" r="2" fill="#071133"/>
+  <circle cx="39" cy="42" r="2" fill="#071133"/>
+  <path d="M27 47c3 3 7 3 10 0" fill="none" stroke="#071133" stroke-linecap="round" stroke-width="2"/>
+</svg>

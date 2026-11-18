@@ -57,7 +57,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(
                     "/", "/login", "/error",
-                    "/css/**", "/js/**", "/images/**", "/audio/**", "/favicon.ico"
+                    "/css/**", "/js/**", "/images/**", "/audio/**", "/favicon.ico", "/favicon.svg"
                 ).permitAll()
                 .requestMatchers("/create/**", "/api/**").hasRole("ADMIN")
                 .requestMatchers("/my-profile/**").hasRole("USER")
