@@ -48,7 +48,7 @@ server:
   servlet:
     session:
       cookie:
-        name: SECRET_SANTA_SESSION
+        name: SESSION
 
 gg:
   jte:
