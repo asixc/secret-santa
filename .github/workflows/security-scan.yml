@@ -1,0 +1,109 @@
+name: Scan Deployed Docker Image
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+env:
+  REGISTRY: registry.full4media.com
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+
+    steps:
+      - name: Checkout gitops-config
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: asixc/gitops-config
+          ref: main
+          path: gitops-config
+          token: ${{ secrets.GITOPS_TOKEN }}
+
+      - name: Read deployed image
+        id: image
+        working-directory: gitops-config
+        run: |
+          set -euo pipefail
+          if [ ! -f apps/base/secret-santa/deployment.yaml ]; then
+            echo 'found=false' >> "$GITHUB_OUTPUT"
+            echo 'Secret Santa is not deployed in gitops-config yet; skipping scan.'
+            exit 0
+          fi
+          IMAGE=$(awk '/image: registry\.full4media\.com\/apps\/secret-santa:/ { print $2; exit }' \
+            apps/base/secret-santa/deployment.yaml)
+          test -n "$IMAGE"
+          echo 'found=true' >> "$GITHUB_OUTPUT"
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+          echo "Scanning $IMAGE"
+
+      - name: Report missing deployment
+        if: steps.image.outputs.found != 'true'
+        run: echo 'Secret Santa is not deployed in gitops-config yet; no image was scanned.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Login to Zot registry
+        if: steps.image.outputs.found == 'true'
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Run Trivy vulnerability scanner (SARIF)
+        if: steps.image.outputs.found == 'true'
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ steps.image.outputs.image }}
+          scanners: 'vuln,secret'
+          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
+          ignore-unfixed: true
+          format: sarif
+          output: trivy-results.sarif
+
+      - name: Run Trivy vulnerability scanner (report)
+        if: always() && steps.image.outputs.found == 'true'
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ steps.image.outputs.image }}
+          scanners: 'vuln,secret'
+          severity: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
+          ignore-unfixed: true
+          format: table
+          output: trivy-results.txt
+
+      - name: Publish Trivy report summary
+        if: always() && steps.image.outputs.found == 'true' && hashFiles('trivy-results.txt') != ''
+        run: |
+          {
+            echo '## Scheduled Trivy vulnerability report'
+            echo ''
+            echo 'Image: `${{ steps.image.outputs.image }}`'
+            echo ''
+            echo '<details><summary>Show report</summary>'
+            echo ''
+            echo '```text'
+            cat trivy-results.txt
+            echo '```'
+            echo '</details>'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Trivy results to GitHub Security
+        if: always() && steps.image.outputs.found == 'true' && hashFiles('trivy-results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+        with:
+          sarif_file: trivy-results.sarif
+          wait-for-processing: true
+
+      - name: Upload Trivy report artifact
+        if: always() && steps.image.outputs.found == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: deployed-image-trivy-results
+          path: |
+            trivy-results.sarif
+            trivy-results.txt
