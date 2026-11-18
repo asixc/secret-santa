@@ -59,18 +59,27 @@
 
     .profile-header .logout-btn {
       display: inline-block;
-      margin-top: 15px;
       padding: 10px 25px;
-      background: rgba(255,255,255,0.2);
+      background: rgba(120, 0, 24, 0.55);
+      border: 1px solid rgba(255,255,255,0.45);
       color: white;
       text-decoration: none;
       border-radius: 25px;
       font-size: 14px;
-      transition: background 0.3s;
+      transition: background 0.3s, transform 0.2s;
     }
 
     .profile-header .logout-btn:hover {
-      background: rgba(255,255,255,0.3);
+      background: rgba(120, 0, 24, 0.8);
+      transform: translateY(-2px);
+    }
+
+    .profile-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 24px;
     }
 
     .alert {
@@ -191,7 +200,6 @@
 
     .back-to-profile-btn {
       display: inline-block;
-      margin-top: 15px;
       padding: 10px 25px;
       background: rgba(255,255,255,0.9);
       color: #c31432;
@@ -206,6 +214,20 @@
       background: white;
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    @media (max-width: 600px) {
+      .profile-actions {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .profile-actions a {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+      }
+
     }
 
     .sorteo-card {
@@ -291,11 +313,13 @@
       @if(viendoUsuario.getId().equals(usuario.getId()))
         <div class="email">${usuario.getEmail()}</div>
       @endif
-      <a href="/logout" class="logout-btn">🚪 Cerrar Sesión</a>
-      
-      @if(!viendoUsuario.getId().equals(usuario.getId()))
-        <a href="/my-profile" class="back-to-profile-btn">↩️ Volver a mi perfil</a>
-      @endif
+      <div class="profile-actions">
+        @if(viendoUsuario.getId().equals(usuario.getId()))
+          <a href="/logout" class="logout-btn">🚪 Cerrar Sesión</a>
+        @else
+          <a href="/my-profile" class="back-to-profile-btn">↩️ Volver a mi perfil</a>
+        @endif
+      </div>
     </div>
 
     <!-- Mensajes -->
