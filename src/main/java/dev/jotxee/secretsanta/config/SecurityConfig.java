@@ -2,6 +2,7 @@ package dev.jotxee.secretsanta.config;
 
 import dev.jotxee.secretsanta.security.ParticipanteUserDetails;
 import dev.jotxee.secretsanta.security.ParticipanteUserDetailsService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,7 @@ public class SecurityConfig {
     private final ParticipanteUserDetailsService participanteUserDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final CustomAuthEntryPoint customAuthEntryPoint;
+    private final SecurityRequestLogger securityRequestLogger;
 
     @Value("${admin.username:admin}")
     private String adminUsername;
@@ -110,8 +112,7 @@ public class SecurityConfig {
     public AuthenticationFailureHandler authenticationFailureHandler() {
         return (request, response, exception) -> {
             String username = request.getParameter("username");
-            String ip = request.getRemoteAddr();
-            log.warn("Intento fallido de login para usuario: {} desde IP: {}", username, ip);
+            securityRequestLogger.failedLoginAttempt(request, HttpServletResponse.SC_FOUND, username);
             response.sendRedirect("/login?error");
         };
     }
