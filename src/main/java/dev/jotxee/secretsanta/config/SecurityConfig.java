@@ -1,5 +1,6 @@
 package dev.jotxee.secretsanta.config;
 
+import dev.jotxee.secretsanta.security.LoginParameterNormalizationFilter;
 import dev.jotxee.secretsanta.security.ParticipanteUserDetails;
 import dev.jotxee.secretsanta.security.ParticipanteUserDetailsService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.util.List;
@@ -82,6 +84,7 @@ public class SecurityConfig {
                 })
                 .failureHandler(authenticationFailureHandler())
             )
+            .addFilterBefore(new LoginParameterNormalizationFilter(), UsernamePasswordAuthenticationFilter.class)
             // Logout sencillo
             .logout(logout -> logout
                 .logoutUrl("/logout")
