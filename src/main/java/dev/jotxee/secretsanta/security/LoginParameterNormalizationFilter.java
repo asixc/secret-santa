@@ -16,9 +16,6 @@ import java.util.Map;
 public class LoginParameterNormalizationFilter extends OncePerRequestFilter {
 
     private static final String PASSWORD_PARAMETER = "password";
-    private static final String INVISIBLE_WHITESPACE = "[\\s\\p{Z}\\u200B\\uFEFF]";
-    private static final String LINE_BREAKS_AND_ZERO_WIDTH = "[\\r\\n\\t\\u000B\\f\\u2028\\u2029\\u200B\\u200C\\u200D\\uFEFF]+";
-
     private final RequestMatcher loginMatcher;
 
     public LoginParameterNormalizationFilter(RequestMatcher loginMatcher) {
@@ -48,6 +45,7 @@ public class LoginParameterNormalizationFilter extends OncePerRequestFilter {
         }
 
         @Override
+        @SuppressWarnings("java:S1168") // ServletRequest requires null when the parameter is absent.
         public String[] getParameterValues(String name) {
             String[] values = super.getParameterValues(name);
             if (values == null) {
@@ -63,7 +61,7 @@ public class LoginParameterNormalizationFilter extends OncePerRequestFilter {
         @Override
         public Map<String, String[]> getParameterMap() {
             Map<String, String[]> parameters = super.getParameterMap();
-            Map<String, String[]> normalized = new LinkedHashMap<>(parameters.size());
+            Map<String, String[]> normalized = LinkedHashMap.newLinkedHashMap(parameters.size());
             parameters.forEach((name, values) -> {
                 String[] copy = new String[values.length];
                 for (int i = 0; i < values.length; i++) {
@@ -75,15 +73,33 @@ public class LoginParameterNormalizationFilter extends OncePerRequestFilter {
         }
 
         private static String normalize(String name, String value) {
-            if (value == null) {
-                return null;
+            if (value == null || !PASSWORD_PARAMETER.equals(name)) {
+                return value;
             }
-            if (PASSWORD_PARAMETER.equals(name)) {
-                return value
-                        .replaceAll(LINE_BREAKS_AND_ZERO_WIDTH, "")
-                        .replaceAll("^" + INVISIBLE_WHITESPACE + "+|" + INVISIBLE_WHITESPACE + "+$", "");
+            StringBuilder normalized = new StringBuilder(value.length());
+            for (int i = 0; i < value.length(); i++) {
+                char character = value.charAt(i);
+                if (!isLineBreakOrZeroWidth(character)) {
+                    normalized.append(character);
+                }
             }
-            return value;
+            int start = 0;
+            int end = normalized.length();
+            while (start < end && Character.isSpaceChar(normalized.charAt(start))) {
+                start++;
+            }
+            while (end > start && Character.isSpaceChar(normalized.charAt(end - 1))) {
+                end--;
+            }
+            return normalized.substring(start, end);
+        }
+
+        private static boolean isLineBreakOrZeroWidth(char character) {
+            return switch (character) {
+                case '\r', '\n', '\t', '\u000B', '\f', '\u2028', '\u2029',
+                        '\u200B', '\u200C', '\u200D', '\uFEFF' -> true;
+                default -> false;
+            };
         }
     }
 }

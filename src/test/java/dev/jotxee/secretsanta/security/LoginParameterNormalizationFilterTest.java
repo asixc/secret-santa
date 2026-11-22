@@ -37,6 +37,23 @@ class LoginParameterNormalizationFilterTest {
     }
 
     @Test
+    void removesInvisibleCharactersAndUnicodeSpacesAtTheEdges() throws Exception {
+        MockHttpServletRequest request = loginRequest("user@example.com", "\u00a0\u200bAbc\u200d123\u2029\u2003");
+
+        assertThat(filter(request).getParameter("password")).isEqualTo("Abc123");
+    }
+
+    @Test
+    void preservesServletContractForMissingParameters() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/login");
+
+        HttpServletRequest filtered = filter(request);
+
+        assertThat(filtered.getParameter("password")).isNull();
+        assertThat(filtered.getParameterValues("password")).isNull();
+    }
+
+    @Test
     void normalizesParameterValuesAndMap() throws Exception {
         MockHttpServletRequest request = loginRequest("user@example.com", " Abc 123 ");
         request.addParameter("password", "Otra\t456");

@@ -62,7 +62,7 @@ public class SecurityConfig {
             // Autorizaciones
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(
-                    "/", "/login", "/error",
+                    "/", LOGIN_PROCESSING_URL, "/error",
                     "/css/**", "/js/**", "/images/**", "/audio/**", "/favicon.ico", "/favicon.svg"
                 ).permitAll()
                 .requestMatchers("/create/**", "/api/**").hasRole("ADMIN")
@@ -71,7 +71,7 @@ public class SecurityConfig {
             )
             // Login por formulario con redirección condicional
             .formLogin(form -> form
-                .loginPage("/login")
+                .loginPage(LOGIN_PROCESSING_URL)
                 .loginProcessingUrl(LOGIN_PROCESSING_URL)
                 .permitAll()
                 .successHandler((request, response, authentication) -> {
