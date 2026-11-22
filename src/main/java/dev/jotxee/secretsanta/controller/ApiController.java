@@ -26,7 +26,7 @@ public class ApiController {
         try {
             RevealResponse response = secretSantaService.getRevealData(token);
             return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException _) {
             return ResponseEntity.badRequest().build();
         }
     }

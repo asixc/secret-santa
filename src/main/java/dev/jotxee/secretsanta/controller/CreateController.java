@@ -24,6 +24,9 @@ import java.util.List;
 @Slf4j
 public class CreateController {
 
+    private static final String ERROR = "error";
+    private static final String SUCCESS = "success";
+    private static final String CREATE_REDIRECT = "redirect:/create";
     private final SorteoRepository sorteoRepository;
     private final SorteoService sorteoService;
     private final PerfilSorteoRepository perfilSorteoRepository;
@@ -36,11 +39,11 @@ public class CreateController {
         
         // Los mensajes flash se añaden automáticamente al modelo por Spring
         // pero necesitamos asegurarnos de que existan como atributos
-        if (!model.containsAttribute("success")) {
-            model.addAttribute("success", null);
+        if (!model.containsAttribute(SUCCESS)) {
+            model.addAttribute(SUCCESS, null);
         }
-        if (!model.containsAttribute("error")) {
-            model.addAttribute("error", null);
+        if (!model.containsAttribute(ERROR)) {
+            model.addAttribute(ERROR, null);
         }
         
         return "create";
@@ -57,21 +60,21 @@ public class CreateController {
             // Delegar toda la lógica al servicio
             Sorteo sorteo = sorteoService.crearSorteo(sorteoForm);
 
-            redirectAttributes.addFlashAttribute("success", 
+            redirectAttributes.addFlashAttribute(SUCCESS,
                 "¡Sorteo creado exitosamente! Se han asignado los amigos invisibles a " + 
                 sorteo.getPerfiles().size() + " participantes.");
             
-            return "redirect:/create";
+            return CREATE_REDIRECT;
 
         } catch (IllegalArgumentException e) {
             log.warn("Error de validación al crear sorteo: {}", e.getMessage());
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/create";
+            redirectAttributes.addFlashAttribute(ERROR, e.getMessage());
+            return CREATE_REDIRECT;
         } catch (Exception e) {
             log.error("Error inesperado al crear sorteo", e);
-            redirectAttributes.addFlashAttribute("error", 
+            redirectAttributes.addFlashAttribute(ERROR,
                 "Error al crear el sorteo: " + e.getMessage());
-            return "redirect:/create";
+            return CREATE_REDIRECT;
         }
     }
 
@@ -84,9 +87,9 @@ public class CreateController {
             var sorteoOpt = sorteoRepository.findById(id);
             
             if (sorteoOpt.isEmpty()) {
-                redirectAttributes.addFlashAttribute("error", 
+                redirectAttributes.addFlashAttribute(ERROR,
                     "No se encontró el sorteo a eliminar");
-                return "redirect:/create";
+                return CREATE_REDIRECT;
             }
             
             Sorteo sorteo = sorteoOpt.get();
@@ -97,16 +100,16 @@ public class CreateController {
             
             log.info("Sorteo eliminado: {} (ID: {})", nombreSorteo, id);
             
-            redirectAttributes.addFlashAttribute("success", 
+            redirectAttributes.addFlashAttribute(SUCCESS,
                 "Sorteo \"" + nombreSorteo + "\" eliminado correctamente");
             
         } catch (Exception e) {
             log.error("Error al eliminar sorteo con ID: {}", id, e);
-            redirectAttributes.addFlashAttribute("error", 
+            redirectAttributes.addFlashAttribute(ERROR,
                 "Error al eliminar el sorteo: " + e.getMessage());
         }
         
-        return "redirect:/create";
+        return CREATE_REDIRECT;
     }
 
     /**
@@ -125,15 +128,15 @@ public class CreateController {
 
             log.info("Contraseña regenerada para usuario: {}", perfil.getUsuario().getNombre());
 
-            redirectAttributes.addFlashAttribute("success",
+            redirectAttributes.addFlashAttribute(SUCCESS,
                 "Contraseña regenerada y enviada por email correctamente");
 
         } catch (Exception e) {
             log.error("Error al regenerar contraseña para perfil ID: {}", id, e);
-            redirectAttributes.addFlashAttribute("error",
+            redirectAttributes.addFlashAttribute(ERROR,
                 "Error al regenerar la contraseña: " + e.getMessage());
         }
 
-        return "redirect:/create";
+        return CREATE_REDIRECT;
     }
 }
