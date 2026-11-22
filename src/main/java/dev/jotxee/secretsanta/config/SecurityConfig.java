@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.util.List;
@@ -26,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    private static final String LOGIN_PROCESSING_URL = "/login";
 
     private final ParticipanteUserDetailsService participanteUserDetailsService;
     private final PasswordEncoder passwordEncoder;
@@ -68,6 +72,7 @@ public class SecurityConfig {
             // Login por formulario con redirección condicional
             .formLogin(form -> form
                 .loginPage("/login")
+                .loginProcessingUrl(LOGIN_PROCESSING_URL)
                 .permitAll()
                 .successHandler((request, response, authentication) -> {
                     // Get the user's name instead of email for logging
@@ -84,7 +89,9 @@ public class SecurityConfig {
                 })
                 .failureHandler(authenticationFailureHandler())
             )
-            .addFilterBefore(new LoginParameterNormalizationFilter(), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new LoginParameterNormalizationFilter(
+                    PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, LOGIN_PROCESSING_URL)),
+                    UsernamePasswordAuthenticationFilter.class)
             // Logout sencillo
             .logout(logout -> logout
                 .logoutUrl("/logout")

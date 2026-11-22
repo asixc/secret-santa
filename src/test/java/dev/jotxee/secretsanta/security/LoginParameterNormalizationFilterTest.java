@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -12,7 +14,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class LoginParameterNormalizationFilterTest {
 
-    private final LoginParameterNormalizationFilter filter = new LoginParameterNormalizationFilter();
+    private final LoginParameterNormalizationFilter filter = new LoginParameterNormalizationFilter(
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/login"));
 
     @Test
     void normalizesLoginParameters() throws Exception {
@@ -20,7 +23,7 @@ class LoginParameterNormalizationFilterTest {
 
         HttpServletRequest filtered = filter(request);
 
-        assertThat(filtered.getParameter("username")).isEqualTo("user@example.com");
+        assertThat(filtered.getParameter("username")).isEqualTo(" user @example.com ");
         assertThat(filtered.getParameter("password")).isEqualTo("Abc 123!@#");
     }
 

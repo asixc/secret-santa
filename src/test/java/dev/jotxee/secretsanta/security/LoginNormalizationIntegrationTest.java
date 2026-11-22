@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class LoginNormalizationIntegrationTest {
 
     private static final String EMAIL = "normalized-login@example.com";
-    private static final String PASSWORD = "Abc 123!@#";
+    private static final String PASSWORD = "Abc123!@#xyz";
 
     @Autowired
     private MockMvc mockMvc;
@@ -51,5 +51,46 @@ class LoginNormalizationIntegrationTest {
                         .param("password", " " + PASSWORD + "\n"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/my-profile"));
+    }
+
+    @Test
+    void logsInWithLineBreakInsideGeneratedPassword() throws Exception {
+        mockMvc.perform(post("/login")
+                        .param("username", EMAIL)
+                        .param("password", "Abc123\n!@#xyz"))
+                .andExpect(redirectedUrl("/my-profile"));
+    }
+
+    @Test
+    void rejectsIncorrectPasswordAfterNormalization() throws Exception {
+        mockMvc.perform(post("/login")
+                        .param("username", EMAIL)
+                        .param("password", " Abc123\n!@#xyZ "))
+                .andExpect(redirectedUrl("/login?error"));
+    }
+
+    @Test
+    void preservesSpacesInsidePassword() throws Exception {
+        Usuario usuario = usuarioRepository.findByEmail(EMAIL).orElseThrow();
+        usuario.setPassword(passwordEncoder.encode("frase secreta"));
+        usuarioRepository.save(usuario);
+
+        mockMvc.perform(post("/login")
+                        .param("username", EMAIL)
+                        .param("password", " frase secreta "))
+                .andExpect(redirectedUrl("/my-profile"));
+
+        mockMvc.perform(post("/login")
+                        .param("username", EMAIL)
+                        .param("password", "frasesecreta"))
+                .andExpect(redirectedUrl("/login?error"));
+    }
+
+    @Test
+    void doesNotRemoveSpacesInsideUsername() throws Exception {
+        mockMvc.perform(post("/login")
+                        .param("username", "normalized-login @example.com")
+                        .param("password", PASSWORD))
+                .andExpect(redirectedUrl("/login?error"));
     }
 }

@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -14,17 +15,19 @@ import java.util.Map;
 
 public class LoginParameterNormalizationFilter extends OncePerRequestFilter {
 
-    private static final String LOGIN_PATH = "/login";
-    private static final String USERNAME_PARAMETER = "username";
     private static final String PASSWORD_PARAMETER = "password";
     private static final String INVISIBLE_WHITESPACE = "[\\s\\p{Z}\\u200B\\uFEFF]";
     private static final String LINE_BREAKS_AND_ZERO_WIDTH = "[\\r\\n\\t\\u000B\\f\\u2028\\u2029\\u200B\\u200C\\u200D\\uFEFF]+";
 
+    private final RequestMatcher loginMatcher;
+
+    public LoginParameterNormalizationFilter(RequestMatcher loginMatcher) {
+        this.loginMatcher = loginMatcher;
+    }
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI().substring(request.getContextPath().length());
-        return !"POST".equalsIgnoreCase(request.getMethod())
-                || !LOGIN_PATH.equals(path);
+        return !loginMatcher.matches(request);
     }
 
     @Override
@@ -79,9 +82,6 @@ public class LoginParameterNormalizationFilter extends OncePerRequestFilter {
                 return value
                         .replaceAll(LINE_BREAKS_AND_ZERO_WIDTH, "")
                         .replaceAll("^" + INVISIBLE_WHITESPACE + "+|" + INVISIBLE_WHITESPACE + "+$", "");
-            }
-            if (USERNAME_PARAMETER.equals(name)) {
-                return value.replaceAll(INVISIBLE_WHITESPACE + "+", "");
             }
             return value;
         }
