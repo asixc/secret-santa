@@ -81,7 +81,7 @@ public class SecurityConfig {
                             : "usuario";
                     log.info("Login exitoso para: {}", userName);
                     if (authentication.getAuthorities().stream()
-                            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                            .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()))) {
                         response.sendRedirect("/create");
                     } else {
                         response.sendRedirect("/my-profile");
