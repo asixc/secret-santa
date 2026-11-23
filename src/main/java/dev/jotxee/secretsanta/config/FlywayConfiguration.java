@@ -23,6 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 @ConditionalOnProperty(prefix = "spring.flyway", name = "enabled", havingValue = "true", matchIfMissing = false)
 public class FlywayConfiguration {
 
+    private static final String SEPARATOR = "═══════════════════════════════════════════════════════";
+
     /**
      * Bean de Flyway que se ejecuta automáticamente al arrancar.
      * Spring invocará flyway.migrate() porque Flyway implementa InitializingBean.
@@ -30,9 +32,9 @@ public class FlywayConfiguration {
     @Bean
     @Primary
     public Flyway flyway(DataSource dataSource) {
-        log.info("═══════════════════════════════════════════════════════");
+        log.info(SEPARATOR);
         log.info("🔧 CONFIGURANDO FLYWAY MANUALMENTE");
-        log.info("═══════════════════════════════════════════════════════");
+        log.info(SEPARATOR);
         
         Flyway flyway = Flyway.configure()
                 .dataSource(dataSource)
@@ -53,7 +55,7 @@ public class FlywayConfiguration {
             log.info("   - Migraciones ejecutadas: {}", result.migrationsExecuted);
             log.info("   - Schema version: {}", result.targetSchemaVersion);
             log.info("   - Success: {}", result.success);
-            log.info("═══════════════════════════════════════════════════════");
+            log.info(SEPARATOR);
         } catch (Exception e) {
             log.error("❌ ERROR EN FLYWAY", e);
             throw e;

@@ -1,11 +1,14 @@
 package dev.jotxee.secretsanta.config;
 
+import dev.jotxee.secretsanta.security.LoginParameterNormalizationFilter;
 import dev.jotxee.secretsanta.security.ParticipanteUserDetails;
 import dev.jotxee.secretsanta.security.ParticipanteUserDetailsService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -14,6 +17,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.util.List;
@@ -25,9 +30,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private static final String LOGIN_PROCESSING_URL = "/login";
+
     private final ParticipanteUserDetailsService participanteUserDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final CustomAuthEntryPoint customAuthEntryPoint;
+    private final SecurityRequestLogger securityRequestLogger;
 
     @Value("${admin.username:admin}")
     private String adminUsername;
@@ -51,12 +59,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) {
         http
             // Autorizaciones
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(
-                    "/", "/login", "/error",
+                    "/", LOGIN_PROCESSING_URL, "/error",
                     "/css/**", "/js/**", "/images/**", "/audio/**", "/favicon.ico", "/favicon.svg"
                 ).permitAll()
                 .requestMatchers("/create/**", "/api/**").hasRole("ADMIN")
@@ -65,7 +73,8 @@ public class SecurityConfig {
             )
             // Login por formulario con redirección condicional
             .formLogin(form -> form
-                .loginPage("/login")
+                .loginPage(LOGIN_PROCESSING_URL)
+                .loginProcessingUrl(LOGIN_PROCESSING_URL)
                 .permitAll()
                 .successHandler((request, response, authentication) -> {
                     // Get the user's name instead of email for logging
@@ -74,7 +83,7 @@ public class SecurityConfig {
                             : "usuario";
                     log.info("Login exitoso para: {}", userName);
                     if (authentication.getAuthorities().stream()
-                            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                            .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()))) {
                         response.sendRedirect("/create");
                     } else {
                         response.sendRedirect("/my-profile");
@@ -82,6 +91,9 @@ public class SecurityConfig {
                 })
                 .failureHandler(authenticationFailureHandler())
             )
+            .addFilterBefore(new LoginParameterNormalizationFilter(
+                    PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, LOGIN_PROCESSING_URL)),
+                    UsernamePasswordAuthenticationFilter.class)
             // Logout sencillo
             .logout(logout -> logout
                 .logoutUrl("/logout")
@@ -110,8 +122,7 @@ public class SecurityConfig {
     public AuthenticationFailureHandler authenticationFailureHandler() {
         return (request, response, exception) -> {
             String username = request.getParameter("username");
-            String ip = request.getRemoteAddr();
-            log.warn("Intento fallido de login para usuario: {} desde IP: {}", username, ip);
+            securityRequestLogger.failedLoginAttempt(request, HttpServletResponse.SC_FOUND, username);
             response.sendRedirect("/login?error");
         };
     }

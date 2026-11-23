@@ -26,7 +26,7 @@ public class ApiController {
         try {
             RevealResponse response = secretSantaService.getRevealData(token);
             return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException _) {
             return ResponseEntity.badRequest().build();
         }
     }
@@ -37,7 +37,7 @@ public class ApiController {
         try {
             secretSantaService.reenviarEmailParticipante(id);
             return ResponseEntity.ok().build();
-        } catch (Exception e) {
+        } catch (Exception _) {
             return ResponseEntity.badRequest().build();
         }
     }
@@ -58,7 +58,7 @@ public class ApiController {
             usuarioRepository.save(usuario);
             
             return ResponseEntity.ok().build();
-        } catch (Exception e) {
+        } catch (Exception _) {
             return ResponseEntity.badRequest().build();
         }
     }

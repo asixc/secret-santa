@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -105,20 +105,6 @@ public class UsuarioService {
     }
 
     /**
-     * Obtiene todos los perfiles de sorteo de un usuario por email
-     */
-    @Transactional(readOnly = true)
-    public List<PerfilSorteo> obtenerPerfilesDelUsuarioPorEmail(String email) {
-        Usuario usuario = obtenerPorEmail(email);
-        List<PerfilSorteo> perfiles = perfilSorteoRepository.findByUsuarioId(usuario.getId());
-        
-        // Ordenar por fecha de creación del sorteo descendente (más reciente primero)
-        perfiles.sort((p1, p2) -> p2.getSorteo().getFechaCreacion().compareTo(p1.getSorteo().getFechaCreacion()));
-        
-        return perfiles;
-    }
-
-    /**
      * Obtiene todos los sorteos en los que participa un usuario
      */
     @Transactional(readOnly = true)
@@ -128,10 +114,10 @@ public class UsuarioService {
         // Obtener los IDs únicos de sorteos
         List<Long> sorteoIds = perfiles.stream()
             .map(PerfilSorteo::getSorteo)
-            .filter(sorteo -> sorteo != null)
+            .filter(Objects::nonNull)
             .map(Sorteo::getId)
             .distinct()
-            .collect(Collectors.toList());
+            .toList();
 
         if (sorteoIds.isEmpty()) {
             return List.of();

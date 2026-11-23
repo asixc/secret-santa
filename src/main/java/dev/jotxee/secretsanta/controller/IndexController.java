@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class IndexController {
 
+    private static final String HAS_TOKEN = "hasToken";
     private final SecretSantaService secretSantaService;
 
     public IndexController(SecretSantaService secretSantaService) {
@@ -20,7 +21,7 @@ public class IndexController {
         if (id != null && !id.isBlank()) {
             try {
                 var revealData = secretSantaService.getRevealData(id);
-                model.addAttribute("hasToken", true);
+                model.addAttribute(HAS_TOKEN, true);
                 model.addAttribute("names", revealData.names());
                 model.addAttribute("assignedName", revealData.assigned());
                 model.addAttribute("participantName", revealData.participantName());
@@ -28,12 +29,12 @@ public class IndexController {
                 model.addAttribute("sorteoName", revealData.sorteoName());
                 model.addAttribute("importeMinimo", revealData.importeMinimo());
                 model.addAttribute("importeMaximo", revealData.importeMaximo());
-            } catch (Exception e) {
+            } catch (Exception _) {
                 // Token inválido o no encontrado, mostrar mensaje de bienvenida
-                model.addAttribute("hasToken", false);
+                model.addAttribute(HAS_TOKEN, false);
             }
         } else {
-            model.addAttribute("hasToken", false);
+            model.addAttribute(HAS_TOKEN, false);
         }
         return "index";
     }
