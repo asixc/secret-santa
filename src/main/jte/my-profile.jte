@@ -341,6 +341,43 @@
     .ver-perfil-btn:hover {
       transform: scale(1.05);
     }
+
+    .markdown-preview a {
+      color: #a71d38;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+
+    .markdown-preview {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-left: 3px solid #d8dbea;
+      background: #fafbfe;
+      color: #444;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .markdown-preview:empty {
+      display: none;
+    }
+
+    .markdown-help {
+      display: block;
+      margin-top: 6px;
+      color: #777;
+      font-size: 12px;
+    }
+
+    .markdown-source-readonly {
+      display: none;
+    }
+
+    .markdown-list-item {
+      padding-left: 12px;
+    }
+
   </style>
 </head>
 <body>
@@ -422,9 +459,11 @@
               </div>
 
               <div class="form-group">
-                <label>💭 Preferencias</label>
-                <textarea readonly>${vPreferencias}</textarea>
+                <label>💭 Preferencias y descripción</label>
+                <textarea readonly class="markdown-source markdown-source-readonly">${vPreferencias}</textarea>
+                <div class="markdown-preview"></div>
               </div>
+
             </div>
           @endfor
         @endif
@@ -477,7 +516,8 @@
 
                     <div class="form-group">
                       <label for="preferencias_${perfilDelSorteo.getId()}">💭 Preferencias y gustos</label>
-                      <textarea id="preferencias_${perfilDelSorteo.getId()}" name="preferencias" placeholder="Cuéntanos tus gustos, hobbies, colores favoritos, etc.">${valorPreferencias}</textarea>
+                      <textarea id="preferencias_${perfilDelSorteo.getId()}" name="preferencias" placeholder="Cuéntanos tus gustos, hobbies y colores favoritos. Puedes usar Markdown y pegar enlaces directamente.">${valorPreferencias}</textarea>
+                      <small class="markdown-help">Ejemplos: <strong>**negrita**</strong>, <em>*cursiva*</em>, <code>- Lista de deseos</code>, enlace con texto <code>[Zapatillas adidas](https://www.adidas.es/producto)</code> o URL directa <code>https://www.adidas.es/producto</code>.</small>
                     </div>
 
                     <button type="submit" class="btn-primary">💾 Guardar Cambios</button>
@@ -511,5 +551,6 @@
       </div>
     @endif
   </div>
+  <script src="/js/markdown.js?v=2"></script>
 </body>
 </html>
