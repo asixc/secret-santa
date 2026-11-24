@@ -658,7 +658,7 @@
         @else
           @for(var perfil : perfilesAMostrar)
             <div class="draw-profile-card">
-              <h3>🎄 ${perfil.getSorteo().getNombre()}@if(perfilesAMostrar.size() > 1 && perfil.getSorteo().getNombreInterno() != null && !perfil.getSorteo().getNombreInterno().isEmpty()) - ${perfil.getSorteo().getNombreInterno()}@endif</h3>
+              <h3>🎄 ${perfil.getSorteo().getNombre()}</h3>
               <div class="profile-draw-context">Datos específicos de este sorteo</div>
 
               !{var vCamisa = perfil.getTallaCamisa() != null ? perfil.getTallaCamisa() : "No especificada";}
@@ -707,7 +707,7 @@
           @for(var sorteo : sorteos)
             !{var perfilDelSorteo = perfiles.stream().filter(perfil -> perfil.getSorteo().getId().equals(sorteo.getId())).findFirst().orElse(null);}
             <div class="sorteo-card">
-              <h3>🎄 ${sorteo.getNombre()}@if(sorteo.getNombreInterno() != null && !sorteo.getNombreInterno().isEmpty()) - ${sorteo.getNombreInterno()}@endif</h3>
+              <h3>🎄 ${sorteo.getNombre()}</h3>
               <div class="fecha">📅 Creado: ${sorteo.getFechaCreacion().format(formatter)}</div>
 
               @if(perfilDelSorteo != null)
