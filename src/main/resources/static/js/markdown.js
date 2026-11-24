@@ -44,8 +44,63 @@
   };
 
   document.querySelectorAll('.markdown-source').forEach((source) => {
-    const preview = source.nextElementSibling;
-    if (!preview || !preview.classList.contains('markdown-preview')) return;
-    preview.innerHTML = renderMarkdown(source.value);
+    const nextElement = source.nextElementSibling;
+    const preview = nextElement && nextElement.classList.contains('markdown-preview')
+      ? nextElement
+      : null;
+    const targetPreview = source.dataset.previewTarget
+      ? document.getElementById(source.dataset.previewTarget)
+      : null;
+    const emptyState = source.dataset.emptyTarget
+      ? document.querySelector('[data-preference-empty="' + source.dataset.emptyTarget + '"]')
+      : null;
+    const updatePreview = () => {
+      const rendered = renderMarkdown(source.value);
+      if (preview) preview.innerHTML = rendered;
+      if (targetPreview) targetPreview.innerHTML = rendered;
+      if (emptyState) emptyState.hidden = Boolean(source.value.trim());
+    };
+    source.addEventListener('input', updatePreview);
+    updatePreview();
+  });
+
+  document.querySelectorAll('[data-preference-modal]').forEach((modal) => {
+    const source = document.getElementById(modal.dataset.preferenceSource);
+    const openButtons = document.querySelectorAll('[data-preference-open="' + modal.id + '"]');
+    const fields = modal.querySelectorAll('input:not([type="hidden"]), textarea');
+    let originalValues = new Map();
+    let lastTrigger = null;
+    if (!source || !openButtons.length) return;
+
+    const closeModal = (restore) => {
+      if (restore) {
+        fields.forEach((field) => {
+          field.value = originalValues.get(field) || '';
+        });
+        source.dispatchEvent(new Event('input'));
+      }
+      modal.hidden = true;
+      document.body.classList.remove('preference-modal-open');
+      if (lastTrigger) lastTrigger.focus();
+    };
+
+    openButtons.forEach((openButton) => openButton.addEventListener('click', () => {
+      lastTrigger = openButton;
+      originalValues = new Map([...fields].map((field) => [field, field.value]));
+      modal.hidden = false;
+      document.body.classList.add('preference-modal-open');
+      fields[0].focus();
+    }));
+
+    modal.querySelectorAll('[data-preference-cancel], [data-preference-close]')
+      .forEach((button) => button.addEventListener('click', () => closeModal(true)));
+    modal.querySelector('[data-preference-apply]')
+      .addEventListener('click', () => closeModal(false));
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) closeModal(true);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !modal.hidden) closeModal(true);
+    });
   });
 })();

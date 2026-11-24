@@ -237,6 +237,27 @@
     }
 
     @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      .profile-container {
+        max-width: 100%;
+        padding: 0 4px;
+      }
+
+      .section {
+        padding: 16px;
+      }
+
+      .draws-section {
+        padding: 0;
+      }
+
+      .draws-section > h2 {
+        padding: 16px;
+      }
+
       .profile-actions {
         flex-direction: column;
         gap: 12px;
@@ -378,6 +399,213 @@
       padding-left: 12px;
     }
 
+    .preference-card {
+      margin-top: 8px;
+      padding: 16px 18px;
+      background: #fafbfe;
+      border: 1px solid #ececf2;
+      border-radius: 10px;
+    }
+
+    .preference-card-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .preference-card-heading label {
+      display: block;
+      margin: 0;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .preference-edit-button {
+      flex: 0 0 auto;
+      padding: 8px 14px;
+      border: 1px solid #c31432;
+      border-radius: 20px;
+      background: white;
+      color: #a71d38;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .preference-edit-button:hover {
+      background: #fff4f6;
+    }
+
+    .preference-display {
+      min-height: 20px;
+    }
+
+    .profile-field-summary {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: white;
+      color: #333;
+      cursor: pointer;
+      font: inherit;
+      text-align: left;
+    }
+
+    .profile-field-summary:hover {
+      border-color: #c31432;
+      box-shadow: 0 2px 8px rgba(195, 20, 50, 0.1);
+    }
+
+    .profile-field-summary-label {
+      display: block;
+      margin-bottom: 6px;
+      color: #555;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .profile-field-summary-value {
+      display: block;
+      color: #333;
+      font-size: 16px;
+    }
+
+    .preference-empty {
+      margin: 12px 0 0;
+      color: #888;
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    .preference-modal {
+      position: fixed;
+      z-index: 1000;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(36, 11, 54, 0.58);
+    }
+
+    .preference-modal[hidden] {
+      display: none;
+    }
+
+    .preference-modal-panel {
+      width: min(760px, 100%);
+      max-height: min(720px, calc(100vh - 40px));
+      overflow-y: auto;
+      padding: 24px;
+      border-radius: 14px;
+      background: white;
+      box-shadow: 0 20px 60px rgba(36, 11, 54, 0.32);
+    }
+
+    .preference-modal-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .preference-modal-heading h3 {
+      margin: 0;
+      color: #c31432;
+      font-size: 21px;
+    }
+
+    .preference-modal-heading p {
+      margin: 5px 0 0;
+      color: #777;
+      font-size: 13px;
+    }
+
+    .preference-modal-close {
+      width: 34px;
+      height: 34px;
+      border: 0;
+      border-radius: 50%;
+      background: #f5e9ed;
+      color: #a71d38;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .preference-modal textarea {
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 190px;
+      resize: vertical;
+    }
+
+    .preference-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .preference-cancel-button,
+    .preference-apply-button {
+      padding: 10px 18px;
+      border-radius: 22px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .preference-cancel-button {
+      border: 1px solid #ddd;
+      background: white;
+      color: #666;
+    }
+
+    .preference-apply-button {
+      border: 0;
+      background: linear-gradient(135deg, #c31432 0%, #240b36 100%);
+      color: white;
+    }
+
+    body.preference-modal-open {
+      overflow: hidden;
+    }
+
+    @media (max-width: 600px) {
+      .preference-card-heading {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .preference-edit-button {
+        width: 100%;
+      }
+
+      .preference-modal {
+        align-items: flex-end;
+        padding: 0;
+      }
+
+      .preference-modal-panel {
+        max-height: calc(100vh - 18px);
+        border-radius: 14px 14px 0 0;
+        padding: 20px;
+      }
+
+      .preference-modal-actions {
+        flex-direction: column-reverse;
+      }
+
+      .preference-cancel-button,
+      .preference-apply-button {
+        width: 100%;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -492,35 +720,84 @@
                   !{var valorZapato = perfilDelSorteo.getTallaZapato() != null ? perfilDelSorteo.getTallaZapato() : "";}
                   !{var valorChaqueta = perfilDelSorteo.getTallaChaqueta() != null ? perfilDelSorteo.getTallaChaqueta() : "";}
                   !{var valorPreferencias = perfilDelSorteo.getPreferencias() != null ? perfilDelSorteo.getPreferencias() : "";}
+                  !{var mostrarCamisa = valorCamisa.isEmpty() ? "No especificada" : valorCamisa;}
+                  !{var mostrarPantalon = valorPantalon.isEmpty() ? "No especificada" : valorPantalon;}
+                  !{var mostrarZapato = valorZapato.isEmpty() ? "No especificada" : valorZapato;}
+                  !{var mostrarChaqueta = valorChaqueta.isEmpty() ? "No especificada" : valorChaqueta;}
 
                   <form action="/my-profile/actualizar-tallas" method="post">
                     <input type="hidden" name="perfilId" value="${perfilDelSorteo.getId()}">
                     <div class="form-grid">
-                      <div class="form-group">
-                        <label for="tallaCamisa_${perfilDelSorteo.getId()}">👕 Talla de Camisa</label>
-                        <input type="text" id="tallaCamisa_${perfilDelSorteo.getId()}" name="tallaCamisa" value="${valorCamisa}" placeholder="Ej: S, M, L, XL">
-                      </div>
-                      <div class="form-group">
-                        <label for="tallaPantalon_${perfilDelSorteo.getId()}">👖 Talla de Pantalón</label>
-                        <input type="text" id="tallaPantalon_${perfilDelSorteo.getId()}" name="tallaPantalon" value="${valorPantalon}" placeholder="Ej: 42, 44">
-                      </div>
-                      <div class="form-group">
-                        <label for="tallaZapato_${perfilDelSorteo.getId()}">👟 Talla de Zapato</label>
-                        <input type="text" id="tallaZapato_${perfilDelSorteo.getId()}" name="tallaZapato" value="${valorZapato}" placeholder="Ej: 42, 38">
-                      </div>
-                      <div class="form-group">
-                        <label for="tallaChaqueta_${perfilDelSorteo.getId()}">🧥 Talla de Chaqueta</label>
-                        <input type="text" id="tallaChaqueta_${perfilDelSorteo.getId()}" name="tallaChaqueta" value="${valorChaqueta}" placeholder="Ej: S, M, L">
-                      </div>
+                      <button type="button" class="profile-field-summary" data-preference-open="preferencias_modal_${perfilDelSorteo.getId()}">
+                        <span class="profile-field-summary-label">👕 Talla de Camisa</span>
+                        <span class="profile-field-summary-value">${mostrarCamisa}</span>
+                      </button>
+                      <button type="button" class="profile-field-summary" data-preference-open="preferencias_modal_${perfilDelSorteo.getId()}">
+                        <span class="profile-field-summary-label">👖 Talla de Pantalón</span>
+                        <span class="profile-field-summary-value">${mostrarPantalon}</span>
+                      </button>
+                      <button type="button" class="profile-field-summary" data-preference-open="preferencias_modal_${perfilDelSorteo.getId()}">
+                        <span class="profile-field-summary-label">👟 Talla de Zapato</span>
+                        <span class="profile-field-summary-value">${mostrarZapato}</span>
+                      </button>
+                      <button type="button" class="profile-field-summary" data-preference-open="preferencias_modal_${perfilDelSorteo.getId()}">
+                        <span class="profile-field-summary-label">🧥 Talla de Chaqueta</span>
+                        <span class="profile-field-summary-value">${mostrarChaqueta}</span>
+                      </button>
                     </div>
 
                     <div class="form-group">
-                      <label for="preferencias_${perfilDelSorteo.getId()}">💭 Preferencias y gustos</label>
-                      <textarea id="preferencias_${perfilDelSorteo.getId()}" name="preferencias" placeholder="Cuéntanos tus gustos, hobbies y colores favoritos. Puedes usar Markdown y pegar enlaces directamente.">${valorPreferencias}</textarea>
-                      <small class="markdown-help">Ejemplos: <strong>**negrita**</strong>, <em>*cursiva*</em>, <code>- Lista de deseos</code>, enlace con texto <code>[Zapatillas adidas](https://www.adidas.es/producto)</code> o URL directa <code>https://www.adidas.es/producto</code>.</small>
+                      <div class="preference-card">
+                        <div class="preference-card-heading">
+                          <div>
+                            <label>💭 Preferencias y gustos</label>
+                          </div>
+                          <button type="button" class="preference-edit-button" data-preference-open="preferencias_modal_${perfilDelSorteo.getId()}" aria-controls="preferencias_modal_${perfilDelSorteo.getId()}">✎ Editar</button>
+                        </div>
+                        <div id="preferencias_preview_${perfilDelSorteo.getId()}" class="markdown-preview preference-display" aria-live="polite"></div>
+                        <p class="preference-empty" data-preference-empty="preferencias_preview_${perfilDelSorteo.getId()}">Todavía no has añadido preferencias.</p>
+                      </div>
                     </div>
 
-                    <button type="submit" class="btn-primary">💾 Guardar Cambios</button>
+                    <div id="preferencias_modal_${perfilDelSorteo.getId()}" class="preference-modal" data-preference-modal data-preference-source="preferencias_${perfilDelSorteo.getId()}" hidden>
+                      <div class="preference-modal-panel" role="dialog" aria-modal="true" aria-labelledby="preferencias_modal_title_${perfilDelSorteo.getId()}">
+                        <div class="preference-modal-heading">
+                          <div>
+                            <h3 id="preferencias_modal_title_${perfilDelSorteo.getId()}">Editar tallas y preferencias</h3>
+                            <p>Actualiza los datos y pulsa Guardar para aplicar los cambios.</p>
+                          </div>
+                          <button type="button" class="preference-modal-close" data-preference-close aria-label="Cerrar">&times;</button>
+                        </div>
+                        <div class="form-grid">
+                          <div class="form-group">
+                            <label for="tallaCamisa_${perfilDelSorteo.getId()}">👕 Talla de Camisa</label>
+                            <input type="text" id="tallaCamisa_${perfilDelSorteo.getId()}" name="tallaCamisa" value="${valorCamisa}" placeholder="Ej: S, M, L, XL">
+                          </div>
+                          <div class="form-group">
+                            <label for="tallaPantalon_${perfilDelSorteo.getId()}">👖 Talla de Pantalón</label>
+                            <input type="text" id="tallaPantalon_${perfilDelSorteo.getId()}" name="tallaPantalon" value="${valorPantalon}" placeholder="Ej: 42, 44">
+                          </div>
+                          <div class="form-group">
+                            <label for="tallaZapato_${perfilDelSorteo.getId()}">👟 Talla de Zapato</label>
+                            <input type="text" id="tallaZapato_${perfilDelSorteo.getId()}" name="tallaZapato" value="${valorZapato}" placeholder="Ej: 42, 38">
+                          </div>
+                          <div class="form-group">
+                            <label for="tallaChaqueta_${perfilDelSorteo.getId()}">🧥 Talla de Chaqueta</label>
+                            <input type="text" id="tallaChaqueta_${perfilDelSorteo.getId()}" name="tallaChaqueta" value="${valorChaqueta}" placeholder="Ej: S, M, L">
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label for="preferencias_${perfilDelSorteo.getId()}">💭 Preferencias y gustos</label>
+                          <textarea id="preferencias_${perfilDelSorteo.getId()}" name="preferencias" class="markdown-source" placeholder="Cuéntanos tus gustos, hobbies y colores favoritos. Puedes usar Markdown y pegar enlaces directamente." data-preview-target="preferencias_preview_${perfilDelSorteo.getId()}" data-empty-target="preferencias_preview_${perfilDelSorteo.getId()}">${valorPreferencias}</textarea>
+                        </div>
+                        <small class="markdown-help">Ejemplos: <strong>**negrita**</strong>, <em>*cursiva*</em>, <code>- Lista de deseos</code>, enlace con texto <code>[Zapatillas adidas](https://www.adidas.es/producto)</code> o URL directa <code>https://www.adidas.es/producto</code>.</small>
+                        <div class="preference-modal-actions">
+                          <button type="button" class="preference-cancel-button" data-preference-cancel>Cancelar</button>
+                          <button type="submit" class="preference-apply-button" data-preference-apply>Guardar</button>
+                        </div>
+                      </div>
+                    </div>
+
                   </form>
                 </div>
               @endif
@@ -551,6 +828,6 @@
       </div>
     @endif
   </div>
-  <script src="/js/markdown.js?v=2"></script>
+  <script src="/js/markdown.js?v=3"></script>
 </body>
 </html>
